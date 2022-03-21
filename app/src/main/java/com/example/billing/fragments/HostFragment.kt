@@ -1,0 +1,550 @@
+package com.example.billing.fragments
+
+import android.annotation.SuppressLint
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.sqlite.db.SimpleSQLiteQuery
+import com.example.billing.R
+import com.example.billing.activitys.Billing
+import com.example.billing.activitys.MainActivity
+import com.example.billing.activitys.TemplateActivity
+import com.example.billing.utils.*
+import com.example.sport.ui.view.MCard
+import com.example.sport.ui.view.MDialog
+import com.example.sport.ui.view.SettingItemColum
+import com.example.sport.ui.view.TimeSelectView
+import com.example.billing.utils.RememberState
+import com.example.billing.utils.datas.*
+import com.example.billing.utils.getTimeOfToday
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.observeOn
+import kotlinx.coroutines.launch
+
+@Composable
+fun HostFragment(mainActivity: MainActivity) {
+    HostBaseFragment(mainActivity = mainActivity, type = Type.Host)
+}
+
+val isRefreshing = mutableStateOf(false)
+
+class HostFragmentModel : ViewModel() {
+    var timeBoxState: TimeState = getTimeOfToday()
+    var timeBoxValueTemp = listOf(
+        listOf(RememberState(0.0), RememberState(0.0)),
+        listOf(RememberState(0.0), RememberState(0.0)),
+        listOf(RememberState(0.0), RememberState(0.0)),
+    )
+}
+
+@SuppressLint("UnrememberedMutableState", "CoroutineCreationDuringComposition")
+@Composable
+fun HostBaseFragment(
+    mainActivity: MainActivity,
+    type: Type,
+    model: HostFragmentModel = viewModel()
+) {
+    val timeBoxState = model.timeBoxState
+    val index = if (type == Type.Host) 0 else if (type == Type.Borrowers) 1 else 2
+    val leftBoxMoney = model.timeBoxValueTemp[index][0]
+    val rightBoxMoney = model.timeBoxValueTemp[index][1]
+    var leftBoxTitle = ""
+    var rightBoxTitle = "偿还"
+    var screening = Screening()
+    val state = rememberSwipeRefreshState(isRefreshing = isRefreshing.value)
+    val scope = rememberCoroutineScope()
+    SwipeRefresh(
+        state = state,
+        onRefresh = {
+            isRefreshing.value = true
+            scope.launch {
+                delay(1000)
+                isRefreshing.value = false
+            }
+        }
+    ) {
+        when (type) {
+            Type.Host -> {
+                leftBoxTitle = "收入"
+                rightBoxTitle = "支出"
+                screening = Screening(
+                    startTime = Time(
+                        timeBoxState.year.getState().value,
+                        timeBoxState.month.getState().value,
+                        1,
+                        1
+                    ).getState(),
+                    endTime = Time(
+                        timeBoxState.year.getState().value,
+                        timeBoxState.month.getState().value,
+                        32,
+                        1
+                    ).getState(),
+                    type = RememberState(
+                        DetailTypeState.All
+                    )
+                )
+            }
+
+            Type.Borrowers -> {
+                leftBoxTitle = "借入"
+                screening = Screening(
+                    startTime = Time(
+                        timeBoxState.year.getState().value,
+                        timeBoxState.month.getState().value,
+                        0,
+                        0
+                    ).getState(),
+                    endTime = Time(
+                        timeBoxState.year.getState().value,
+                        timeBoxState.month.getState().value,
+                        32,
+                        0
+                    ).getState(),
+                    type = RememberState(
+                        DetailTypeState.All
+                    ),
+                    direction = Billing.sSettings.borrowersChecked,
+                )
+            }
+
+            Type.Lenders -> {
+                leftBoxTitle = "借出"
+                screening = Screening(
+                    startTime = Time(
+                        timeBoxState.year.getState().value,
+                        timeBoxState.month.getState().value,
+                        1,
+                        1
+                    ).getState(),
+                    endTime = Time(
+                        timeBoxState.year.getState().value,
+                        timeBoxState.month.getState().value,
+                        31,
+                        1
+                    ).getState(),
+                    type = RememberState(
+                        DetailTypeState.All
+                    ),
+                    direction = Billing.sSettings.borrowersChecked,
+                )
+            }
+        }
+        val list = screening.getScreened().asLiveData()
+        val listState = list.observeAsState(arrayListOf())
+
+        list.observe(mainActivity) { details ->
+            var leftTemp = 0.0
+            var rightTemp = 0.0
+            details.forEach { detail ->
+                if (detail.type.triad) {
+                    leftTemp += detail.money
+                } else {
+                    rightTemp += detail.money
+                }
+            }
+            leftBoxMoney set leftTemp
+            rightBoxMoney set rightTemp
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color(98, 0, 238),
+                                Color.White
+                            )
+                        )
+                    )
+            ) {
+                MCard {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(modifier = Modifier.weight(0.7f), contentAlignment = Alignment.Center) {
+                            TimeBox()
+                        }
+                        Line()
+                        Box(modifier = Modifier.weight(1f)) {
+                            MoneyBox(title = leftBoxTitle, leftBoxMoney.getState().value) {
+
+                            }
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            MoneyBox(title = rightBoxTitle, rightBoxMoney.getState().value) {
+
+                            }
+                        }
+                    }
+                }
+            }
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                item {
+                    if (listState.value.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .height(80.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Text(text = "暂无数据", modifier = Modifier.align(Alignment.Center))
+                        }
+                    }
+                }
+                itemsIndexed(items = listState.value) { index, it ->
+                    if (index == 0 ||
+                        (listState.value[index - 1].time.toDate() != it.time.toDate() && timeBoxState.month.getState().value != 13) ||
+                        (listState.value[index - 1].time.month != it.time.month && timeBoxState.month.getState().value == 13)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 5.dp, vertical = 8.dp)
+                                .clip(RoundedCornerShape(25, 25, 0, 0))
+                                .background(Color.Gray.copy(0.3f))
+                        ) {
+                            Text(
+                                text = if (timeBoxState.month.getState().value != 13) it.time.toDate() else "${it.time.month}月", Modifier.padding(start = 6.dp)
+                            )
+                        }
+                    }
+                    DetailItem(detail = it)
+                }
+                item {
+                    Spacer(modifier = Modifier.height(60.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DetailItem(detail: Detail, model: HostFragmentModel = viewModel()) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = detail.type.name,
+            Modifier
+                .weight(1f)
+                .padding(start = 5.dp)
+        )
+        IconButton(onClick = {
+            Thread {
+                Billing.db.getDetailDao().delete(detail = detail)
+            }.start()
+        }) {
+            Icon(
+                imageVector = Icons.Default.Clear,
+                contentDescription = "删除"
+            )
+        }
+    }
+}
+
+@Composable
+fun Line() {
+    Spacer(
+        modifier = Modifier
+            .padding(start = 5.dp, end = 25.dp)
+            .fillMaxHeight()
+            .width(0.5.dp)
+            .background(Color.Gray)
+    )
+}
+
+@Composable
+fun MoneyBox(
+    title: String,
+    money: Double,
+    onclick: () -> Unit
+) {
+    ItemColum(hint = title, onclick = { onclick() }) {
+        Text(text = buildAnnotatedString {
+            withStyle(
+                style = SpanStyle(
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp
+                )
+            ) {
+                append(money.toInt().toString())
+            }
+            withStyle(
+                style = SpanStyle(
+                    color = Color.Black,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 16.sp
+                )
+            ) {
+                val floatAfter = (money * 100).toInt() - money.toInt() * 100
+                if (floatAfter < 10) {
+                    append(".0${String.format("%d", floatAfter)}")
+                } else {
+                    append(".${String.format("%2d", floatAfter)}")
+                }
+            }
+        })
+    }
+}
+
+@Composable
+fun UserBox(
+    value: RememberState<MovDirectionState>
+) {
+    val visible = RememberState(false)
+    ItemColum(hint = "目标", onclick = {
+        visible set true
+    }) {
+        Row {
+            Text(text = buildAnnotatedString {
+                withStyle(
+                    style = SpanStyle(
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 28.sp
+                    )
+                ) {
+                    append(value.getState().value.name.getState().value[0])
+                }
+                withStyle(
+                    style = SpanStyle(
+                        color = Color.Blue,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                ) {
+                    append(value.getState().value.name.getState().value.substring(1))
+                }
+            })
+            Icon(
+                painter = painterResource(id = R.drawable.ic_expand),
+                contentDescription = "设置时间",
+                modifier = Modifier
+                    .size(22.dp)
+                    .align(Alignment.Bottom)
+                    .padding(bottom = 5.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun TimeBox() {
+    val model: HostFragmentModel = viewModel()
+    val time = model.timeBoxState
+
+    val visible = RememberState(false)
+    var yearTemp by remember {
+        mutableStateOf(0)
+    }
+    var monthTemp by remember {
+        mutableStateOf(0)
+    }
+
+    MDialog(visible = visible) {
+        Row(
+            modifier = Modifier.width(500.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            TimeSelectView(start = 1, end = 3000, default = time.year.value, modifier = Modifier
+                .padding(start = 10.dp)
+                .padding(vertical = 25.dp), selected = {
+                yearTemp = it
+            })
+            Spacer(modifier = Modifier.width(50.dp))
+            TimeSelectView(
+                start = 1, end = 12, default = time.month.value, modifier = Modifier
+                    .padding(end = 10.dp)
+                    .padding(vertical = 25.dp), selected = {
+                    monthTemp = it
+                }, other = "全年"
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(3.dp)
+        ) {
+            Text(
+                text = "取消",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        visible set false
+                    }
+            )
+            Spacer(
+                modifier = Modifier
+                    .width(1.dp)
+                    .height(16.dp)
+                    .background(
+                        Color.Black.copy(0.5f)
+                    )
+            )
+            Text(
+                text = "保存",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .clickable {
+                        time.year set yearTemp
+                        time.month set monthTemp
+                        isRefreshing.value = true
+                        isRefreshing.value = false
+                        visible set false
+                    }
+            )
+        }
+    }
+    ItemColum(hint = "${time.year.getState().value}年", onclick = {
+        visible set true
+    }) {
+        Row {
+            Text(
+                text = if (time.month.getState().value != 13) {
+                    buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 28.sp
+                            )
+                        ) {
+                            append(time.month.getState().value.toString())
+                        }
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color.Blue,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        ) {
+                            append("月")
+                        }
+                    }
+                } else {
+                    buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp
+                            )
+                        ) {
+                            append("全年")
+                        }
+                    }
+                }
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.ic_expand),
+                contentDescription = "设置时间",
+                modifier = Modifier
+                    .size(22.dp)
+                    .align(Alignment.Bottom)
+                    .padding(bottom = 5.dp)
+            )
+        }
+    }
+}
+
+
+@Composable
+fun ItemColum(
+    hint: RememberState<String>,
+    onclick: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Column(
+        Modifier
+            .clickable(
+                indication = null,
+                interactionSource = MutableInteractionSource()
+            ) {
+                onclick()
+            },
+    ) {
+        Text(text = hint.getState().value, color = Color.Gray, fontSize = 15.sp)
+        content()
+    }
+}
+
+@Composable
+fun ItemColum(
+    hint: String,
+    onclick: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Column(
+        Modifier
+            .clickable(
+                indication = null,
+                interactionSource = MutableInteractionSource()
+            ) {
+                onclick()
+            },
+    ) {
+        Text(text = hint, color = Color.Gray, fontSize = 15.sp)
+        content()
+    }
+}
