@@ -2,7 +2,7 @@ package com.example.billing.fragments
 
 import android.annotation.SuppressLint
 import android.widget.Toast
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -15,20 +15,30 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.billing.R
 import com.example.billing.activitys.Billing
 import com.example.billing.activitys.TemplateActivity
+import com.example.billing.utils.datas.DetailType
 import com.example.billing.utils.datas.DetailTypeState
 import com.example.sport.ui.view.TopAppBar
+import com.example.sport.ui.view.components.EditText
+import com.example.sport.ui.view.components.EditTextIcon
+import com.example.sport.ui.view.components.EditTextPromptBox
+import com.example.sport.ui.view.components.EditTextSettingBox
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -85,8 +95,7 @@ fun CreateDetailTypeFragment(templateActivity: TemplateActivity) {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun CreateDetailTypeTopTitleView() {
-    val model: CreateDetailTypeFragmentModel = viewModel()
+fun CreateDetailTypeTopTitleView(model: CreateDetailTypeFragmentModel = viewModel()) {
     val templateActivity = model.templateActivity!!
     val pagerState = model.pagerState!!
     val pages = listOf("收入", "支出")
@@ -112,7 +121,15 @@ fun CreateDetailTypeTopTitleView() {
         onRight = {
             IconButton(
                 onClick = {
-
+                    val detailTypeState = DetailTypeState.SelfSubscribe()
+                    Thread {
+                        detailTypeState.id = Billing.db.getDetailTypeDao()
+                            .insert(model.detailFormState!!.detailType.getState().value.getData()).toInt()
+                    }.start()
+                    model.detailFormState!!.run {
+                        detailType set detailTypeState
+                        visible set true
+                    }
                 }
             ) {
                 Icon(
@@ -173,9 +190,82 @@ fun CreateDetailTypeTopTitleView() {
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun CreateDetailTypeAnimatedEditView() {
-
+fun CreateDetailTypeAnimatedEditView(model: CreateDetailTypeFragmentModel = viewModel()) {
+    val detailFormState = model.detailFormState!!
+    AnimatedVisibility(
+        visible = detailFormState.visible.getState().value,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically()
+    ) {
+        Column(
+            modifier = Modifier
+                .background(color = Color(242, 243, 245))
+                .fillMaxWidth()
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val focusManager = LocalFocusManager.current
+                EditText(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged {
+                            Thread {
+                                Billing.db
+                                    .getDetailTypeDao()
+                                    .insert(model.detailFormState!!.detailType.getState().value.getData())
+                            }.start()
+                        }
+                        .focusable(),
+                    editTextSttting = EditTextSettingBox.TextOption() {
+                        Thread {
+                            Billing.db.getDetailTypeDao()
+                                .insert(model.detailFormState!!.detailType.getState().value.getData())
+                        }.start()
+                        focusManager.clearFocus()
+                    },
+                    editTextPrompt = EditTextPromptBox.TextAndText(
+                        "名称",
+                        "点击写名称..."
+                    ),
+                    editTextIcon = EditTextIcon(
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_message),
+                                contentDescription = "名称",
+                                modifier = Modifier.size(24.dp, 24.dp)
+                            )
+                        },
+                        trailingIcon = {
+                            Text(
+                                text = if (detailFormState.detailType.getState().value.triad.getState().value) "收入" else "支出",
+                                modifier = Modifier
+                                    .clickable(
+                                        indication = null,
+                                        interactionSource = MutableInteractionSource()
+                                    ) {
+                                        detailFormState.detailType.getState().value.triad set !detailFormState.detailType.getState().value.triad.value
+                                        Thread {
+                                            Billing.db.getDetailTypeDao()
+                                                .insert(model.detailFormState!!.detailType.getState().value.getData())
+                                        }.start()
+                                        focusManager.clearFocus()
+                                    },
+                                color = Color.Black,
+                                maxLines = 1,
+                                fontSize = 22.sp
+                            )
+                        }
+                    ),
+                    sidevalue = detailFormState.detailType.getState().value.name
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -185,9 +275,8 @@ fun DetailTypeColum(triad: Boolean) {
     val detailFormState = model.detailFormState!!
     val templateActivity = model.templateActivity!!
 
-    var list by remember {
-        mutableStateOf(Billing.sBillingData.detailTypes)
-    }
+    val list = Billing.db.getDetailTypeDao().queryWithTriad(triad).asLiveData()
+    val listState = list.observeAsState(arrayListOf())
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -197,67 +286,64 @@ fun DetailTypeColum(triad: Boolean) {
                 PaddingValues(0.dp)
             },
         ) {
-            items(items = list, key = { it.name.getState().value }) { it ->
-                val dismissState = rememberDismissState()
-                if (dismissState.isDismissed(DismissDirection.StartToEnd)) {
-                    list = list.toMutableList().also { detailTypes ->
-                        detailTypes.remove(it)
-                    }
-                    Billing.sBillingData.detailTypes.remove(it)
-                    Billing.saveData()
-                }
-                if (it.triad.getState().value == triad) {
-                    SwipeToDismiss(
-                        state = dismissState,
-                        background = {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        Brush.horizontalGradient(
-                                            colors = listOf(
-                                                Color.Red,
-                                                Color.White
-                                            ),
-                                            endX = 1000f
-                                        )
-                                    )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterStart)
-                                        .padding(start = 15.dp),
-                                    contentDescription = "删除"
-                                )
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        dismissThresholds = {
-                            FractionalThreshold(if (it == DismissDirection.StartToEnd) 0.25f else 0.5f)
-                        },
-                        directions = setOf(DismissDirection.StartToEnd)
-                    ) {
-                        DetailTypeHorizontalView(detailType = it) {
-                            if (it.diy) {
-                                if (detailFormState.visible.value && detailFormState.detailType.value == it) {
-                                    detailFormState.visible set false
-                                    detailFormState.detailType set DetailTypeState.All
-                                } else {
-                                    detailFormState.visible set true
-                                    detailFormState.detailType set it
-                                }
-                            } else {
-                                Toast.makeText(
-                                    templateActivity,
-                                    "你无法修改${it.name.value}的数据!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+            items(items = listState.value) { it ->
+                DetailTypeHorizontalView(detailType = it) {
+                    if (it.diy) {
+                        if (detailFormState.visible.value && detailFormState.detailType.value == it.getState()) {
+                            detailFormState.visible set false
+                            detailFormState.detailType set DetailTypeState.All
+                        } else {
+                            detailFormState.visible set true
+                            detailFormState.detailType set it.getState()
                         }
+                    } else {
+                        Toast.makeText(
+                            templateActivity,
+                            "你无法修改${it.name}的数据!",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
+//                val dismissState = rememberDismissState()
+//                if (dismissState.isDismissed(DismissDirection.StartToEnd)) {
+//                    Thread {
+//                        Billing.db.getDetailTypeDao().delete(it)
+//                    }.start()
+//                }
+//                SwipeToDismiss(
+//                    state = dismissState,
+//                    background = {
+//                        Box(
+//                            modifier = Modifier
+//                                .fillMaxSize()
+//                                .background(
+//                                    Brush.horizontalGradient(
+//                                        colors = listOf(
+//                                            Color.Red,
+//                                            Color.White
+//                                        ),
+//                                        endX = 1000f
+//                                    )
+//                                )
+//                        ) {
+//                            Icon(
+//                                imageVector = Icons.Default.Clear,
+//                                modifier = Modifier
+//                                    .align(Alignment.CenterStart)
+//                                    .padding(start = 15.dp),
+//                                contentDescription = "删除"
+//                            )
+//                        }
+//                    },
+//                    modifier = Modifier
+//                        .fillMaxWidth(),
+//                    dismissThresholds = {
+//                        FractionalThreshold(if (it == DismissDirection.StartToEnd) 0.25f else 0.5f)
+//                    },
+//                    directions = setOf(DismissDirection.StartToEnd)
+//                ) {
+//
+//                }
             }
         }
     }
@@ -266,7 +352,8 @@ fun DetailTypeColum(triad: Boolean) {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun DetailTypeHorizontalView(
-    detailType: DetailTypeState,
+    detailType: DetailType,
+    model: CreateDetailTypeFragmentModel = viewModel(),
     onclick: () -> Unit
 ) {
     val model: CreateDetailTypeFragmentModel = viewModel()
@@ -290,7 +377,7 @@ fun DetailTypeHorizontalView(
             modifier = Modifier
                 .size(48.dp, 48.dp)
                 .background(
-                    color = if (detailFormState.detailType.getState().value == detailType) Color.Yellow else Color(
+                    color = if (detailFormState.detailType.getState().value == detailType.getState()) Color.Yellow else Color(
                         242,
                         243,
                         245
@@ -307,10 +394,33 @@ fun DetailTypeHorizontalView(
             )
         }
         Text(
-            text = detailType.name.getState().value,
+            text = detailType.name,
             modifier = Modifier
                 .padding(5.dp)
+                .weight(1f)
         )
+        IconButton(
+            onClick = {
+                if (detailType.diy) {
+                    Thread {
+                        Billing.db.getDetailTypeDao().delete(detailType)
+                    }.start()
+                } else {
+                    Toast.makeText(
+                        model.templateActivity,
+                        "你无法修改${detailType.name}的数据!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_remove),
+                contentDescription = "删除",
+                tint = Color.Red,
+                modifier = Modifier.size(24.dp, 24.dp),
+            )
+        }
     }
 }
 

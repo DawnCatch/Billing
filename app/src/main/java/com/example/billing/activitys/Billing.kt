@@ -13,6 +13,7 @@ import com.example.sport.utils.Local.LOCAL_DATA
 import com.example.billing.utils.Screen
 import com.example.billing.utils.Settings
 import com.example.billing.utils.datas.BillingDatabase
+import com.example.billing.utils.datas.DetailTypeState
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.tencent.mmkv.MMKV
@@ -21,6 +22,7 @@ class Billing:Application() {
     companion object {
         lateinit var sSettings: Settings
         lateinit var sBillingData: BillingData
+        lateinit var sBillingDatabase: BillingDatabase
         lateinit var sGson: Gson
         lateinit var sPreferences: SharedPreferences
         lateinit var screen: Screen
@@ -50,6 +52,18 @@ class Billing:Application() {
         db = Room
             .databaseBuilder(sContext as Billing,BillingDatabase::class.java,"db_details")
             .build()
+
+        Thread {
+            db.getDetailTypeDao().inserts(
+                listOf(
+                    DetailTypeState.Borrowing.getData(),
+                    DetailTypeState.Wage.getData(),
+                    DetailTypeState.Lending.getData(),
+                    DetailTypeState.Play.getData(),
+                    DetailTypeState.Eat.getData()
+                )
+            )
+        }.start()
 
         sPreferences = getSharedPreferences(LOCAL_DATA, MODE_PRIVATE)
 

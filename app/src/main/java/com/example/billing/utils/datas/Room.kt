@@ -7,9 +7,49 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.flow.Flow
 
 @Dao
+interface DetailTypeDao {
+    @Query("SELECT * FROM detailTypes")
+    fun queryAll(): Flow<List<DetailType>>
+
+    @Query("SELECT * FROM detailTypes WHERE name = :value")
+    fun queryWithName(value: String): Flow<DetailType>
+
+    @Query("SELECT * FROM detailTypes WHERE id = :value")
+    fun queryWithId(value: Int): Flow<DetailType>
+
+    @Query("SELECT * FROM detailTypes WHERE triad = :value")
+    fun queryWithTriad(value: Boolean): Flow<List<DetailType>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(detailType: DetailType):Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun inserts(detailTypes: List<DetailType>)
+
+    @Query("DELETE FROM detailTypes")
+    fun deleteAll()
+
+    @Update
+    fun updata(detailType: DetailType)
+
+    @Delete
+    fun delete(detailType: DetailType)
+
+    @RawQuery(observedEntities = [DetailType::class])
+    fun rawQuery(query: SupportSQLiteQuery): Flow<List<DetailType>>
+
+    fun execSql(sql: String) = rawQuery(
+        SimpleSQLiteQuery(
+            sql,
+            arrayOf()
+        )
+    )
+}
+
+@Dao
 interface DetailDao {
     @Query("SELECT * FROM details")
-    fun queryAll(): Cursor
+    fun queryAll(): Flow<List<Detail>>
 
     @Query("SELECT * FROM details WHERE type LIKE :value")
     fun queryWithDetailType(value: String?): Flow<List<Detail>>
@@ -40,10 +80,10 @@ interface DetailDao {
         type: String,
         direction: String,
         channel: String
-    ):Flow<List<Detail>>
+    ): Flow<List<Detail>>
 
-    @Insert()
-    fun insert(entity: Detail)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(detail: Detail)
 
     @Query("DELETE FROM details")
     fun deleteAll()
@@ -66,7 +106,8 @@ interface DetailDao {
 }
 
 @TypeConverters(DetailTypeConverters::class, MovDirectionConverters::class, TimeConverters::class)
-@Database(entities = [Detail::class], version = 1)
+@Database(entities = [Detail::class, DetailType::class], version = 1)
 abstract class BillingDatabase : RoomDatabase() {
     abstract fun getDetailDao(): DetailDao
+    abstract fun getDetailTypeDao(): DetailTypeDao
 }

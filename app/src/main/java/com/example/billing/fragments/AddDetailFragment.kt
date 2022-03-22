@@ -3,6 +3,7 @@ package com.example.billing.fragments
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -13,6 +14,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -22,6 +24,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -35,13 +38,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.billing.R
 import com.example.billing.activitys.Billing
 import com.example.billing.activitys.EXTRA_FRAGMENT
 import com.example.billing.activitys.STATE_BAR
 import com.example.billing.activitys.TemplateActivity
-import com.example.billing.utils.*
 import com.example.sport.ui.view.MDialog
 import com.example.sport.ui.view.TimeSelectView
 import com.example.sport.ui.view.TopAppBar
@@ -56,6 +59,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
 class AddDetailFragmentModel : ViewModel() {
@@ -70,7 +74,7 @@ class AddDetailFragmentModel : ViewModel() {
 
     @ExperimentalPagerApi
     var pagerState: PagerState? = null
-    val detail = Detail(
+    var detail = Detail(
         time = getTimeOfToday().getData(),
         money = 0.0,
         message = "",
@@ -97,13 +101,44 @@ fun rememberDetailFormState() = remember {
     androidx.compose.ui.ExperimentalComposeUiApi::class,
 )
 @Composable
-fun AddDetailFragment(templateActivity: TemplateActivity) {
-    val model: AddDetailFragmentModel = viewModel()
+fun AddDetailFragment(
+    templateActivity: TemplateActivity,
+    model: AddDetailFragmentModel = viewModel()
+) {
     val pagerState = rememberPagerState(pageCount = 2)
     val detailFormState = rememberDetailFormState()
     model.pagerState = pagerState
     model.detailFormState = detailFormState
     model.templateActivity = templateActivity
+    model.detail = Gson().fromJson(
+        templateActivity.intent.extras!!.getString(
+            "DetailData",
+            Gson().toJson(model.detail.getData())
+        ), Detail::class.java
+    ).getState()
+    detailFormState.run {
+        if (model.detail.getData().type.id != null) {
+            val d =
+                Billing.db.getDetailTypeDao().queryWithId(model.detail.getData().type.id!!)
+                    .asLiveData()
+            d.observe(templateActivity) { it ->
+                if (it != null) {
+                    detailFormState.detailType set it.getState()
+                    visible set true
+                } else {
+                    detailFormState.detailType set DetailTypeState.All
+                }
+            }
+        }
+//        detailType set model.detail.type.getState().value
+//        if (model.detail.type.value != DetailTypeState.All) {
+//            val index = Billing.sBillingData.detailTypes.indexOf(model.detail.type.value)
+//            if (index != -1) {
+//                model.detail.type set Billing.sBillingData.detailTypes[index]
+//            }
+//            visible set true
+//        }
+    }
 
     Box {
         Column {
@@ -264,7 +299,9 @@ fun DetailTypeGrid(
     val model: AddDetailFragmentModel = viewModel()
     val detailFormState = model.detailFormState!!
     val templateActivity = model.templateActivity!!
-    val pagerState = model.pagerState!!
+
+    val list = Billing.db.getDetailTypeDao().queryWithTriad(triad).asLiveData()
+    val listState = list.observeAsState(arrayListOf())
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyVerticalGrid(
@@ -275,18 +312,14 @@ fun DetailTypeGrid(
                 PaddingValues(0.dp)
             }
         ) {
-            Billing.sBillingData.detailTypes.forEach {
-                if (it.triad.getState().value == triad) {
-                    item {
-                        DetailTypeVerticalView(detailType = it) {
-                            if (detailFormState.visible.value && detailFormState.detailType.value == it) {
-                                detailFormState.visible set false
-                                detailFormState.detailType set DetailTypeState.All
-                            } else {
-                                detailFormState.visible set true
-                                detailFormState.detailType set it
-                            }
-                        }
+            items(listState.value) { it ->
+                DetailTypeVerticalView(detailType = it) {
+                    if (detailFormState.visible.value && detailFormState.detailType.value == it.getState()) {
+                        detailFormState.visible set false
+                        detailFormState.detailType set DetailTypeState.All
+                    } else {
+                        detailFormState.visible set true
+                        detailFormState.detailType set it.getState()
                     }
                 }
             }
@@ -295,7 +328,7 @@ fun DetailTypeGrid(
                     detailType = DetailTypeState(
                         name = RememberState("设置"),
                         triad = RememberState(true)
-                    )
+                    ).getData()
                 ) {
                     val bundle = Bundle()
                     bundle.putString(EXTRA_FRAGMENT, "类别设置")
@@ -305,8 +338,8 @@ fun DetailTypeGrid(
                             bundle
                         )
                     )
-                    detailFormState.visible set false
-                    detailFormState.detailType set DetailTypeState.All
+//                    detailFormState.visible set false
+//                    detailFormState.detailType set DetailTypeState.All
                 }
             }
         }
@@ -315,7 +348,7 @@ fun DetailTypeGrid(
 
 @Composable
 fun DetailTypeVerticalView(
-    detailType: DetailTypeState,
+    detailType: DetailType,
     onclick: () -> Unit
 ) {
     val model: AddDetailFragmentModel = viewModel()
@@ -336,7 +369,7 @@ fun DetailTypeVerticalView(
             modifier = Modifier
                 .size(48.dp, 48.dp)
                 .background(
-                    color = if (detailFormState.detailType.getState().value == detailType) Color.Yellow else Color(
+                    color = if (detailFormState.detailType.getState().value == detailType.getState()) Color.Yellow else Color(
                         242,
                         243,
                         245
@@ -353,7 +386,7 @@ fun DetailTypeVerticalView(
             )
         }
         Text(
-            text = detailType.name.getState().value,
+            text = detailType.name,
             modifier = Modifier.padding(5.dp)
         )
     }
@@ -651,8 +684,12 @@ fun KeyboardView() {
                             templateActivity.finish()
                             isRefreshing.value = true
                             isRefreshing.value = false
-                        }else {
-                            Toast.makeText(templateActivity,"金额:${detail.money.value}不是一个有意义的数字",Toast.LENGTH_LONG).show()
+                        } else {
+                            Toast.makeText(
+                                templateActivity,
+                                "金额:${detail.money.value}不是一个有意义的数字",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 )

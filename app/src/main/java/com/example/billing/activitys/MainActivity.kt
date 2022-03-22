@@ -143,7 +143,7 @@ class MainActivity : BaseActivity() {
                     val bundle = Bundle()
                     bundle.putString(EXTRA_FRAGMENT, "添加明细")
                     bundle.putBoolean(STATE_BAR, false)
-                    bundle.putBoolean(RE_INIT,true)
+                    bundle.putBoolean(RE_INIT, true)
                     startActivity(
                         Intent(this@MainActivity, TemplateActivity::class.java).putExtras(
                             bundle

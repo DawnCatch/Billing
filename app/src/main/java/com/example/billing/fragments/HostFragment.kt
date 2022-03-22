@@ -1,6 +1,8 @@
 package com.example.billing.fragments
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.os.Bundle
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -35,15 +37,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.sqlite.db.SimpleSQLiteQuery
 import com.example.billing.R
-import com.example.billing.activitys.Billing
-import com.example.billing.activitys.MainActivity
-import com.example.billing.activitys.TemplateActivity
+import com.example.billing.activitys.*
 import com.example.billing.utils.*
 import com.example.sport.ui.view.MCard
 import com.example.sport.ui.view.MDialog
@@ -54,6 +55,7 @@ import com.example.billing.utils.datas.*
 import com.example.billing.utils.getTimeOfToday
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -74,6 +76,8 @@ class HostFragmentModel : ViewModel() {
         listOf(RememberState(0.0), RememberState(0.0)),
         listOf(RememberState(0.0), RememberState(0.0)),
     )
+    @SuppressLint("StaticFieldLeak")
+    var mainActivity: MainActivity? = null
 }
 
 @SuppressLint("UnrememberedMutableState", "CoroutineCreationDuringComposition")
@@ -83,6 +87,7 @@ fun HostBaseFragment(
     type: Type,
     model: HostFragmentModel = viewModel()
 ) {
+    model.mainActivity = mainActivity
     val timeBoxState = model.timeBoxState
     val index = if (type == Type.Host) 0 else if (type == Type.Borrowers) 1 else 2
     val leftBoxMoney = model.timeBoxValueTemp[index][0]
@@ -230,7 +235,7 @@ fun HostBaseFragment(
 
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
             ) {
                 item {
                     if (listState.value.isEmpty()) {
@@ -256,7 +261,8 @@ fun HostBaseFragment(
                                 .background(Color.Gray.copy(0.3f))
                         ) {
                             Text(
-                                text = if (timeBoxState.month.getState().value != 13) it.time.toDate() else "${it.time.month}月", Modifier.padding(start = 6.dp)
+                                text = if (timeBoxState.month.getState().value != 13) it.time.toDate() else "${it.time.month}月",
+                                Modifier.padding(start = 6.dp)
                             )
                         }
                     }
@@ -275,7 +281,19 @@ fun DetailItem(detail: Detail, model: HostFragmentModel = viewModel()) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 12.dp)
+            .clickable {
+                val bundle = Bundle()
+                bundle.putString(EXTRA_FRAGMENT, "添加明细")
+                bundle.putBoolean(STATE_BAR, false)
+                bundle.putBoolean(RE_INIT, true)
+                bundle.putString("DetailData",Gson().toJson(detail))
+                model.mainActivity!!.startActivity(
+                    Intent(model.mainActivity!!, TemplateActivity::class.java).putExtras(
+                        bundle
+                    )
+                )
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(

@@ -64,7 +64,8 @@ data class Settings @OptIn(ExperimentalPagerApi::class) constructor(
 )
 
 data class BillingData(
-    @Expose val detailTypes: MutableList<DetailTypeState> = mutableListOf(
+//    @Expose val detailTypes: MutableList<DetailTypeState> = mutableListOf(
+    @Expose val detailTypes: SnapshotStateList<DetailTypeState> = mutableStateListOf(
         DetailTypeState.Borrowing,
         DetailTypeState.Wage,
         DetailTypeState.Lending,
