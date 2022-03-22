@@ -44,23 +44,23 @@ data class DetailTypeState(
             triad: Boolean,
             icon: Int = R.drawable.ic_other,
             diy: Boolean = false
-        ) = DetailTypeState(name = RememberState(name), triad = RememberState(triad), icon = RememberState(icon), diy = diy)
+        ) = DetailTypeState(id = id,name = RememberState(name), triad = RememberState(triad), icon = RememberState(icon), diy = diy)
 
         fun SelfSubscribe() = create(name = "自定义:${index++}", triad = true, diy = true)
 
         val All = create(id = null,"全部", true)
 
-        val UpAll = create(id = null,"符号全部", true)
-        val DownAll = create(id = null,"符号全部", false)
+        val UpAll = create(id = 1,"收入", true)
+        val DownAll = create(id = 11,"支出", false)
 
         //收入
-        val Borrowing = create(id = 1,"借入", true)
-        val Wage = create(id = 2,"工资", true)
+        val Borrowing = create(id = 2,"借入", true)
+        val Wage = create(id = 3,"工资", true)
 
         //支出
-        val Lending = create(id = 3,"借出", false)
-        val Play = create(id = 4,"娱乐", false)
-        val Eat = create(id = 5,"饮食", false)
+        val Lending = create(id = 12,"借出", false)
+        val Play = create(id = 13,"娱乐", false)
+        val Eat = create(id = 14,"饮食", false)
 
         fun Positive() = mutableListOf<DetailTypeState>(Borrowing, Wage)
 

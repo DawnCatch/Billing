@@ -56,6 +56,8 @@ class Billing:Application() {
         Thread {
             db.getDetailTypeDao().inserts(
                 listOf(
+                    DetailTypeState.UpAll.getData(),
+                    DetailTypeState.DownAll.getData(),
                     DetailTypeState.Borrowing.getData(),
                     DetailTypeState.Wage.getData(),
                     DetailTypeState.Lending.getData(),

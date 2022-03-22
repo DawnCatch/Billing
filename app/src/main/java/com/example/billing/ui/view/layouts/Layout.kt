@@ -66,6 +66,7 @@ fun MDialog(
                 .verticalScroll(rememberScrollState())
                 .background(Color.White, shape = RoundedCornerShape(5.dp)),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
             content = content
         )
     }

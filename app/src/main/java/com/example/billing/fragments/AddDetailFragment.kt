@@ -82,6 +82,8 @@ class AddDetailFragmentModel : ViewModel() {
         direction = MovDirectionState.All.getData(),
         channel = MovDirectionState.All.getData()
     ).getState()
+    val modifierState = RememberState(true)
+    val erroVisible = RememberState(false)
 }
 
 @Stable
@@ -126,7 +128,12 @@ fun AddDetailFragment(
                     detailFormState.detailType set it.getState()
                     visible set true
                 } else {
-                    detailFormState.detailType set DetailTypeState.All
+                    model.modifierState set false
+                    if(model.detail.getData().type.triad) {
+                        detailFormState.detailType set DetailTypeState.UpAll
+                    }else {
+                        detailFormState.detailType set DetailTypeState.DownAll
+                    }
                 }
             }
         }
@@ -173,12 +180,83 @@ fun AddDetailTopTitleView() {
     val pages = listOf("收入", "支出")
     val coroutineScope = rememberCoroutineScope()
 
+    if (model.erroVisible.getState().value) {
+        MDialog(onDismissRequest = {
+            model.erroVisible set false
+        }) {
+            Text(text = "原来的明细格式已被删除", fontSize = 26.sp)
+            Text(text = "现将使用默认明细格式")
+            Row(
+                modifier = Modifier.width(500.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                DetailTypeVerticalView(detailType = model.detailFormState!!.detailType.getState().value.getData()) {
+                    model.erroVisible set false
+                }
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(3.dp)
+            ) {
+                Text(
+                    text = "取消",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            model.erroVisible set false
+                        }
+                )
+                Spacer(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(16.dp)
+                        .background(
+                            Color.Black.copy(0.5f)
+                        )
+                )
+                Text(
+                    text = "确定",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clickable {
+                            if (model.detail.money.value != 0.0) {
+                                model.detail.type set model.detailFormState!!.detailType
+                                Thread {
+                                    Billing.db.getDetailDao().insert(model.detail.getData())
+                                }.start()
+                                model.templateActivity!!.finish()
+                                isRefreshing.value = true
+                                isRefreshing.value = false
+                            } else {
+                                Toast.makeText(
+                                    templateActivity,
+                                    "金额:${model.detail.money.value}不是一个有意义的数字",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                model.erroVisible set false
+                            }
+                        }
+                )
+            }
+        }
+    }
+
     TopAppBar(
         onLeft = {
             IconButton(onClick = {
-                templateActivity.finish()
-                isRefreshing.value = true
-                isRefreshing.value = false
+                if (model.modifierState.getState().value) {
+                    templateActivity.finish()
+                    isRefreshing.value = true
+                    isRefreshing.value = false
+                }else {
+                    model.erroVisible set true
+                }
             }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
@@ -349,7 +427,7 @@ fun DetailTypeGrid(
 @Composable
 fun DetailTypeVerticalView(
     detailType: DetailType,
-    onclick: () -> Unit
+    onclick: (() -> Unit)? = null
 ) {
     val model: AddDetailFragmentModel = viewModel()
     val detailFormState = model.detailFormState!!
@@ -362,7 +440,7 @@ fun DetailTypeVerticalView(
                 indication = null,
                 interactionSource = MutableInteractionSource()
             ) {
-                onclick()
+                onclick?.let { it() }
             }
     ) {
         Box(
