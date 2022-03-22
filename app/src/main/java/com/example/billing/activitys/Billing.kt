@@ -14,6 +14,7 @@ import com.example.billing.utils.Screen
 import com.example.billing.utils.Settings
 import com.example.billing.utils.datas.BillingDatabase
 import com.example.billing.utils.datas.DetailTypeState
+import com.example.billing.utils.datas.MovDirectionState
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.tencent.mmkv.MMKV
@@ -63,6 +64,13 @@ class Billing:Application() {
                     DetailTypeState.Lending.getData(),
                     DetailTypeState.Play.getData(),
                     DetailTypeState.Eat.getData()
+                )
+            )
+            db.getMovDirectionDao().inserts(
+                listOf(
+                    MovDirectionState.All.getData(),
+                    MovDirectionState.ALiPay.getData(),
+                    MovDirectionState.WeCharPay.getData()
                 )
             )
         }.start()

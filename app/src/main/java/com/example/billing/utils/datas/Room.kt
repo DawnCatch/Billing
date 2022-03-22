@@ -7,6 +7,43 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.flow.Flow
 
 @Dao
+interface MovDirectionDao {
+    @Query("SELECT * FROM movDirections")
+    fun queryAll(): Flow<List<MovDirection>>
+
+    @Query("SELECT * FROM movDirections WHERE id = :value")
+    fun queryWithId(value: Int): Flow<MovDirection>
+
+    @Query("SELECT * FROM movDirections WHERE type = :value")
+    fun queryWithType(value: Boolean): Flow<List<MovDirection>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(movDirection: MovDirection):Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun inserts(movDirection: List<MovDirection>)
+
+    @Query("DELETE FROM movDirections")
+    fun deleteAll()
+
+    @Update
+    fun updata(movDirection: MovDirection)
+
+    @Delete
+    fun delete(movDirection: MovDirection)
+
+    @RawQuery(observedEntities = [MovDirection::class])
+    fun rawQuery(query: SupportSQLiteQuery): Flow<List<MovDirection>>
+
+    fun execSql(sql: String) = rawQuery(
+        SimpleSQLiteQuery(
+            sql,
+            arrayOf()
+        )
+    )
+}
+
+@Dao
 interface DetailTypeDao {
     @Query("SELECT * FROM detailTypes")
     fun queryAll(): Flow<List<DetailType>>
@@ -106,8 +143,9 @@ interface DetailDao {
 }
 
 @TypeConverters(DetailTypeConverters::class, MovDirectionConverters::class, TimeConverters::class)
-@Database(entities = [Detail::class, DetailType::class], version = 1)
+@Database(entities = [Detail::class, DetailType::class,MovDirection::class], version = 1)
 abstract class BillingDatabase : RoomDatabase() {
     abstract fun getDetailDao(): DetailDao
     abstract fun getDetailTypeDao(): DetailTypeDao
+    abstract fun getMovDirectionDao(): MovDirectionDao
 }

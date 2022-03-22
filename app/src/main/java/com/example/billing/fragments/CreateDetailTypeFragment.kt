@@ -304,46 +304,6 @@ fun DetailTypeColum(triad: Boolean) {
                         ).show()
                     }
                 }
-//                val dismissState = rememberDismissState()
-//                if (dismissState.isDismissed(DismissDirection.StartToEnd)) {
-//                    Thread {
-//                        Billing.db.getDetailTypeDao().delete(it)
-//                    }.start()
-//                }
-//                SwipeToDismiss(
-//                    state = dismissState,
-//                    background = {
-//                        Box(
-//                            modifier = Modifier
-//                                .fillMaxSize()
-//                                .background(
-//                                    Brush.horizontalGradient(
-//                                        colors = listOf(
-//                                            Color.Red,
-//                                            Color.White
-//                                        ),
-//                                        endX = 1000f
-//                                    )
-//                                )
-//                        ) {
-//                            Icon(
-//                                imageVector = Icons.Default.Clear,
-//                                modifier = Modifier
-//                                    .align(Alignment.CenterStart)
-//                                    .padding(start = 15.dp),
-//                                contentDescription = "删除"
-//                            )
-//                        }
-//                    },
-//                    modifier = Modifier
-//                        .fillMaxWidth(),
-//                    dismissThresholds = {
-//                        FractionalThreshold(if (it == DismissDirection.StartToEnd) 0.25f else 0.5f)
-//                    },
-//                    directions = setOf(DismissDirection.StartToEnd)
-//                ) {
-//
-//                }
             }
         }
     }
@@ -356,7 +316,6 @@ fun DetailTypeHorizontalView(
     model: CreateDetailTypeFragmentModel = viewModel(),
     onclick: () -> Unit
 ) {
-    val model: CreateDetailTypeFragmentModel = viewModel()
     val detailFormState = model.detailFormState!!
 
     Row(
@@ -422,14 +381,4 @@ fun DetailTypeHorizontalView(
             )
         }
     }
-}
-
-@Composable
-fun CreateDirectionFragment(templateActivity: TemplateActivity) {
-
-}
-
-@Composable
-fun CreateChannelFragment(templateActivity: TemplateActivity) {
-
 }

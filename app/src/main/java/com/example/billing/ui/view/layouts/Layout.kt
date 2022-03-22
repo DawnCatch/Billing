@@ -37,6 +37,7 @@ fun MCard(
 
 @Composable
 fun MDialog(
+    modifier: Modifier = Modifier,
     visible: RememberState<Boolean>,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -45,10 +46,11 @@ fun MDialog(
             visible.set(false)
         }) {
             Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
+                modifier = modifier
+//                    .verticalScroll(rememberScrollState())
                     .background(Color.White, shape = RoundedCornerShape(5.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
                 content = content
             )
         }

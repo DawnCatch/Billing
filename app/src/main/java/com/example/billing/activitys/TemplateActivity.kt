@@ -78,10 +78,10 @@ class TemplateActivity : BaseActivity() {
                 CreateDetailTypeFragment(templateActivity = this)
             }
             "渠道设置" -> {
-                CreateChannelFragment(templateActivity = this)
+                CreateMovDirectionFragment(templateActivity = this,false)
             }
             "对象设置" -> {
-                CreateDirectionFragment(templateActivity = this)
+                CreateMovDirectionFragment(templateActivity = this,true)
             }
         }
     }

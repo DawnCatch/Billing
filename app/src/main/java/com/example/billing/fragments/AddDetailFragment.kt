@@ -13,6 +13,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,11 +23,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -129,9 +127,9 @@ fun AddDetailFragment(
                     visible set true
                 } else {
                     model.modifierState set false
-                    if(model.detail.getData().type.triad) {
+                    if (model.detail.getData().type.triad) {
                         detailFormState.detailType set DetailTypeState.UpAll
-                    }else {
+                    } else {
                         detailFormState.detailType set DetailTypeState.DownAll
                     }
                 }
@@ -228,17 +226,21 @@ fun AddDetailTopTitleView() {
                             if (model.detail.money.value != 0.0) {
                                 model.detail.type set model.detailFormState!!.detailType
                                 Thread {
-                                    Billing.db.getDetailDao().insert(model.detail.getData())
+                                    Billing.db
+                                        .getDetailDao()
+                                        .insert(model.detail.getData())
                                 }.start()
                                 model.templateActivity!!.finish()
                                 isRefreshing.value = true
                                 isRefreshing.value = false
                             } else {
-                                Toast.makeText(
-                                    templateActivity,
-                                    "金额:${model.detail.money.value}不是一个有意义的数字",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                                Toast
+                                    .makeText(
+                                        templateActivity,
+                                        "金额:${model.detail.money.value}不是一个有意义的数字",
+                                        Toast.LENGTH_LONG
+                                    )
+                                    .show()
                                 model.erroVisible set false
                             }
                         }
@@ -254,7 +256,7 @@ fun AddDetailTopTitleView() {
                     templateActivity.finish()
                     isRefreshing.value = true
                     isRefreshing.value = false
-                }else {
+                } else {
                     model.erroVisible set true
                 }
             }) {
@@ -314,57 +316,67 @@ fun MovDirectionCheck(
     visible: RememberState<Boolean>,
     contentDescription: String,
     value: RememberState<MovDirectionState>,
-    values: MutableList<MovDirectionState>,
+    type: Boolean,
+    model: AddDetailFragmentModel = viewModel(),
     create: () -> Unit
 ) {
-    MDialog(visible = visible) {
-        for (i in 0 until values.size) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
-                .width(200.dp)
-                .clickable {
-                    if (value.value.equals(values[i])) {
-                        value set MovDirectionState.All
-                    } else {
-                        value set values[i]
-                    }
-                    visible set false
-                }) {
-                Text(
-                    text = Billing.sBillingData.channels[i].name.getState().value,
-                    textAlign = TextAlign.Left,
-                    modifier = Modifier
-                        .weight(3f)
-                        .padding(10.dp)
-                        .padding(start = 15.dp)
-                )
-                if (value.getState().value.equals(values[i])) {
-                    Icon(
-                        imageVector = Icons.Filled.Check,
-                        contentDescription = contentDescription,
-                        modifier = Modifier.weight(
-                            1f
+    MDialog(modifier = Modifier.height(180.dp),visible = visible) {
+        val list = Billing.db.getMovDirectionDao().queryWithType(type).asLiveData()
+        val listState = list.observeAsState(arrayListOf())
+        LazyColumn {
+            items(listState.value) { it ->
+                if (it != MovDirectionState.All.getData()) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                        .width(200.dp)
+                        .clickable {
+                            if (value.value == it.getState()) {
+                                value set MovDirectionState.All
+                            } else {
+                                value set it.getState()
+                            }
+                            visible set false
+                        }) {
+                        Text(
+                            text = it.name,
+                            textAlign = TextAlign.Left,
+                            modifier = Modifier
+                                .weight(3f)
+                                .padding(10.dp)
+                                .padding(start = 15.dp)
                         )
+                        if (value.getState().value == it.getState()) {
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = contentDescription,
+                                modifier = Modifier.weight(
+                                    1f
+                                )
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+
+            item {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                    .width(200.dp)
+                    .clickable {
+                        visible set false
+                        create()
+                    }) {
+                    Text(
+                        text = "添加设置",
+                        textAlign = TextAlign.Left,
+                        modifier = Modifier
+                            .weight(3f)
+                            .padding(10.dp)
+                            .padding(start = 15.dp)
                     )
-                } else {
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
-            .width(200.dp)
-            .clickable {
-                visible set false
-                create()
-            }) {
-            Text(
-                text = "添加设置",
-                textAlign = TextAlign.Left,
-                modifier = Modifier
-                    .weight(3f)
-                    .padding(10.dp)
-                    .padding(start = 15.dp)
-            )
-            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
@@ -529,18 +541,20 @@ fun AddDetailAnimatedEditView() {
             )
         }
     }  //时间
-    MovDirectionCheck(channelVisible, "渠道", detail.channel, Billing.sBillingData.channels) {
+    MovDirectionCheck(channelVisible, "渠道", detail.channel, false) {
         val bundle = Bundle()
         bundle.putString(EXTRA_FRAGMENT, "渠道设置")
+        bundle.putBoolean(STATE_BAR, false)
         templateActivity.startActivity(
             Intent(templateActivity, TemplateActivity::class.java).putExtras(
                 bundle
             )
         )
     }
-    MovDirectionCheck(directionVisible, "对象", detail.direction, Billing.sBillingData.directions) {
+    MovDirectionCheck(directionVisible, "对象", detail.direction, true) {
         val bundle = Bundle()
         bundle.putString(EXTRA_FRAGMENT, "对象设置")
+        bundle.putBoolean(STATE_BAR, false)
         templateActivity.startActivity(
             Intent(templateActivity, TemplateActivity::class.java).putExtras(
                 bundle
@@ -704,7 +718,7 @@ fun KeyboardView() {
                 TextKeyboardItem(text = "5", modifier = modifier, onclick = onclick)
                 TextKeyboardItem(text = "6", modifier = modifier, onclick = onclick)
                 TextKeyboardItem(
-                    text = if (detail.channel.getState().value == MovDirectionState.All) "渠道" else detail.channel.getState().value.name.value,
+                    text = if (detail.channel.getState().value == MovDirectionState.All) "渠道" else detail.channel.getState().value.name.getState().value,
                     modifier = Modifier
                         .background(Color(144, 218, 228, 255))
                         .then(modifier)
@@ -717,7 +731,7 @@ fun KeyboardView() {
                 TextKeyboardItem(text = "2", modifier = modifier, onclick = onclick)
                 TextKeyboardItem(text = "3", modifier = modifier, onclick = onclick)
                 TextKeyboardItem(
-                    text = if (detail.direction.getState().value == MovDirectionState.All) "对象" else detail.direction.getState().value.name.value,
+                    text = if (detail.direction.getState().value == MovDirectionState.All) "对象" else detail.direction.getState().value.name.getState().value,
                     modifier = Modifier
                         .background(Color(144, 218, 228, 255))
                         .then(modifier)
