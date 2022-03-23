@@ -77,6 +77,9 @@ class MainActivity : BaseActivity() {
             mutableStateOf(false)
         }
         drawerGesturesEnabled = scaffoldState.drawerState.isOpen
+        var screeningState by remember {
+            mutableStateOf(false)
+        }
         val topContent = RememberState<@Composable () -> Unit>(
             {
                 Text(
@@ -87,7 +90,11 @@ class MainActivity : BaseActivity() {
         Scaffold(
             scaffoldState = scaffoldState,
             drawerContent = {
-                Navigation(scaffoldState)
+                if (screeningState == true) {
+                    ScreenFragment(screening = Screening())
+                }else {
+                    Navigation(scaffoldState)
+                }
             },
             drawerGesturesEnabled = drawerGesturesEnabled,
             bottomBar = {
@@ -103,6 +110,7 @@ class MainActivity : BaseActivity() {
                                 scope.launch {
                                     scaffoldState.drawerState.open()
                                 }
+                                screeningState = false
                             }
                         ) {
                             Icon(
@@ -115,16 +123,18 @@ class MainActivity : BaseActivity() {
                     onRight = {
                         IconButton(
                             onClick = {
-                                val bundle = Bundle()
-                                bundle.putString(EXTRA_FRAGMENT, "筛选")
-                                startActivity(
-                                    Intent(
-                                        this@MainActivity,
-                                        TemplateActivity::class.java
-                                    ).putExtras(
-                                        bundle
-                                    )
-                                )
+                                scope.launch { scaffoldState.drawerState.open() }
+                                screeningState = true
+//                                val bundle = Bundle()
+//                                bundle.putString(EXTRA_FRAGMENT, "筛选")
+//                                startActivity(
+//                                    Intent(
+//                                        this@MainActivity,
+//                                        TemplateActivity::class.java
+//                                    ).putExtras(
+//                                        bundle
+//                                    )
+//                                )
                             }
                         ) {
                             Icon(
