@@ -192,25 +192,12 @@ fun MovDirectionHorizontalView(
                 onclick?.let { it() }
             }
     ) {
-        Box(
+        Text(
+            text = movDirection.name,
             modifier = Modifier
-                .size(48.dp, 48.dp)
-                .background(
-                    color = if (model.movDirectionFormState!!.movDirection.getState().value == movDirection.getState()) Color.Yellow else Color(
-                        242,
-                        243,
-                        245
-                    ),
-                    shape = RoundedCornerShape(100)
-                )
+                .padding(5.dp)
                 .weight(1f)
-        ) {
-            Text(
-                text = movDirection.name,
-                modifier = Modifier
-                    .padding(5.dp)
-            )
-        }
+        )
         IconButton(
             onClick = {
                 Thread {

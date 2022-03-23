@@ -47,7 +47,7 @@ fun MDialog(
         }) {
             Column(
                 modifier = modifier
-//                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState())
                     .background(Color.White, shape = RoundedCornerShape(5.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,

@@ -135,14 +135,6 @@ fun AddDetailFragment(
                 }
             }
         }
-//        detailType set model.detail.type.getState().value
-//        if (model.detail.type.value != DetailTypeState.All) {
-//            val index = Billing.sBillingData.detailTypes.indexOf(model.detail.type.value)
-//            if (index != -1) {
-//                model.detail.type set Billing.sBillingData.detailTypes[index]
-//            }
-//            visible set true
-//        }
     }
 
     Box {
@@ -183,7 +175,7 @@ fun AddDetailTopTitleView() {
             model.erroVisible set false
         }) {
             Text(text = "原来的明细格式已被删除", fontSize = 26.sp)
-            Text(text = "现将使用默认明细格式")
+            Text(text = "现将使用以下明细格式")
             Row(
                 modifier = Modifier.width(500.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -323,61 +315,66 @@ fun MovDirectionCheck(
     MDialog(modifier = Modifier.height(180.dp),visible = visible) {
         val list = Billing.db.getMovDirectionDao().queryWithType(type).asLiveData()
         val listState = list.observeAsState(arrayListOf())
-        LazyColumn {
-            items(listState.value) { it ->
-                if (it != MovDirectionState.All.getData()) {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
-                        .width(200.dp)
-                        .clickable {
-                            if (value.value == it.getState()) {
-                                value set MovDirectionState.All
-                            } else {
-                                value set it.getState()
-                            }
-                            visible set false
-                        }) {
-                        Text(
-                            text = it.name,
-                            textAlign = TextAlign.Left,
-                            modifier = Modifier
-                                .weight(3f)
-                                .padding(10.dp)
-                                .padding(start = 15.dp)
-                        )
-                        if (value.getState().value == it.getState()) {
-                            Icon(
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = contentDescription,
-                                modifier = Modifier.weight(
-                                    1f
-                                )
-                            )
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-                }
-            }
-
-            item {
+        listState.value.forEach {
+            if (it != MovDirectionState.All.getData()) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
                     .width(200.dp)
                     .clickable {
+                        if (value.value == it.getState()) {
+                            value set MovDirectionState.All
+                        } else {
+                            value set it.getState()
+                        }
                         visible set false
-                        create()
                     }) {
                     Text(
-                        text = "添加设置",
+                        text = it.name,
                         textAlign = TextAlign.Left,
                         modifier = Modifier
                             .weight(3f)
                             .padding(10.dp)
                             .padding(start = 15.dp)
                     )
-                    Spacer(modifier = Modifier.weight(1f))
+                    if (value.getState().value == it.getState()) {
+                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = contentDescription,
+                            modifier = Modifier.weight(
+                                1f
+                            )
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             }
         }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+            .width(200.dp)
+            .clickable {
+                value set MovDirectionState.All
+                visible set false
+                create()
+            }) {
+            Text(
+                text = "添加设置",
+                textAlign = TextAlign.Left,
+                modifier = Modifier
+                    .weight(3f)
+                    .padding(10.dp)
+                    .padding(start = 15.dp)
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
+//        LazyColumn {
+//            items(listState.value) { it ->
+//
+//            }
+//
+//            item {
+//
+//            }
+//        }
     }
 }
 

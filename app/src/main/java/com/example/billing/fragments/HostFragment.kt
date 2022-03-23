@@ -146,7 +146,7 @@ fun HostBaseFragment(
                         0
                     ).getState(),
                     type = RememberState(
-                        DetailTypeState.All
+                        DetailTypeState.Borrowing
                     ),
                     direction = Billing.sSettings.borrowersChecked,
                 )
@@ -168,7 +168,7 @@ fun HostBaseFragment(
                         1
                     ).getState(),
                     type = RememberState(
-                        DetailTypeState.All
+                        DetailTypeState.Lending
                     ),
                     direction = Billing.sSettings.borrowersChecked,
                 )
@@ -253,7 +253,33 @@ fun HostBaseFragment(
                         (listState.value[index - 1].time.toDate() != it.time.toDate() && timeBoxState.month.getState().value != 13) ||
                         (listState.value[index - 1].time.month != it.time.month && timeBoxState.month.getState().value == 13)
                     ) {
-                        Box(
+                        val headTime = listState.value[index].time
+                        var left by remember {
+                            mutableStateOf(0.0)
+                        }
+                        var right by remember {
+                            mutableStateOf(0.0)
+                        }
+                        list.observe(mainActivity) { details ->
+                            left = 0.0
+                            right = 0.0
+                            details.forEach {
+                                if (timeBoxState.month.getState().value != 13 && it.time.toDate() == headTime.toDate()) {
+                                    if (it.type.triad) {
+                                        left += it.money
+                                    } else {
+                                        right += it.money
+                                    }
+                                } else if (timeBoxState.month.getState().value == 13 && it.time.month == headTime.month) {
+                                    if (it.type.triad) {
+                                        left += it.money
+                                    } else {
+                                        right += it.money
+                                    }
+                                }
+                            }
+                        }
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 5.dp, vertical = 8.dp)
@@ -262,8 +288,16 @@ fun HostBaseFragment(
                         ) {
                             Text(
                                 text = if (timeBoxState.month.getState().value != 13) it.time.toDate() else "${it.time.month}月",
-                                Modifier.padding(start = 6.dp)
+                                Modifier
+                                    .padding(start = 6.dp)
+                                    .weight(1f)
                             )
+                            if (left != 0.0) {
+                                Text(text = "收入:$left")
+                            }
+                            if (right != 0.0) {
+                                Text(text = "支出:$right", modifier = Modifier.padding(start = 10.dp))
+                            }
                         }
                     }
                     DetailItem(detail = it)
@@ -287,7 +321,7 @@ fun DetailItem(detail: Detail, model: HostFragmentModel = viewModel()) {
                 bundle.putString(EXTRA_FRAGMENT, "添加明细")
                 bundle.putBoolean(STATE_BAR, false)
                 bundle.putBoolean(RE_INIT, true)
-                bundle.putString("DetailData",Gson().toJson(detail))
+                bundle.putString("DetailData", Gson().toJson(detail))
                 model.mainActivity!!.startActivity(
                     Intent(model.mainActivity!!, TemplateActivity::class.java).putExtras(
                         bundle
