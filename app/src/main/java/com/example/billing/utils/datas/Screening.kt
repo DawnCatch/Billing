@@ -10,8 +10,8 @@ import java.time.Month
 data class Screening(
     @Expose val startTime: TimeState = Time(1, 1, 1, 1).getState(),
     @Expose val endTime: TimeState = Time(5000, 1, 1, 1).getState(),
-    @Expose val maxMoney: RememberState<Double> = RememberState(0.0),
-    @Expose val minMoney: RememberState<Double> = RememberState(Double.MAX_VALUE),
+    @Expose val minMoney: RememberState<Double> = RememberState(0.0),
+    @Expose val maxMoney: RememberState<Double> = RememberState(9999999.0),
     @Expose val message: RememberState<String> = RememberState(""),
     @Expose val type: RememberState<DetailTypeState> = RememberState(DetailTypeState.All),
     @Expose val direction: RememberState<MovDirectionState> = RememberState(MovDirectionState.All),
@@ -23,8 +23,8 @@ data class Screening(
     fun getScreened() = Billing.db.getDetailDao().A(
         startTime = if (startTime.month.getState().value != 13) startTime.toString() else "${startTime.year.getState().value}/1/1",
         endTime = if (endTime.month.getState().value != 13) endTime.toString() else "${endTime.year.getState().value+1}/1/0",
-        maxMoney = maxMoney.getState().value,
         minMoney = minMoney.getState().value,
+        maxMoney = maxMoney.getState().value,
         message = "%${message.getState().value}%",
         type = if (type.value == DetailTypeState.All) {
             "%%"

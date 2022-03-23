@@ -69,7 +69,7 @@ class TemplateActivity : BaseActivity() {
                 AboutFragment(templateActivity = this)
             }
             "筛选" -> {
-                ScreenFragment(screening = Screening())
+                ScreenFragment()
             }
             "添加明细" -> {
                 AddDetailFragment(templateActivity = this)

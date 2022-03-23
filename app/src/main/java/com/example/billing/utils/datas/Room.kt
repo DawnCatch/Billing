@@ -103,7 +103,7 @@ interface DetailDao {
     @Query(
         "SELECT * FROM details WHERE " +
                 "time BETWEEN :startTime AND :endTime " +
-                "AND money BETWEEN :maxMoney AND :minMoney " +
+                "AND money BETWEEN :minMoney AND :maxMoney " +
                 "AND message LIKE :message " +
                 "AND type LIKE :type " +
                 "AND direction LIKE :direction " +
@@ -112,7 +112,7 @@ interface DetailDao {
     )
     fun A(
         startTime: String, endTime: String,
-        maxMoney: Double, minMoney: Double,
+        minMoney: Double, maxMoney: Double,
         message: String,
         type: String,
         direction: String,

@@ -1,7 +1,6 @@
 package com.example.billing.fragments
 
 import android.annotation.SuppressLint
-import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,7 +9,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -29,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -37,8 +34,6 @@ import com.example.billing.R
 import com.example.billing.activitys.Billing
 import com.example.billing.activitys.TemplateActivity
 import com.example.billing.utils.RememberState
-import com.example.billing.utils.datas.BillingDatabase
-import com.example.billing.utils.datas.DetailTypeState
 import com.example.billing.utils.datas.MovDirection
 import com.example.billing.utils.datas.MovDirectionState
 import com.example.sport.ui.view.TopAppBar
@@ -46,7 +41,6 @@ import com.example.sport.ui.view.components.EditText
 import com.example.sport.ui.view.components.EditTextIcon
 import com.example.sport.ui.view.components.EditTextPromptBox
 import com.example.sport.ui.view.components.EditTextSettingBox
-import com.google.accompanist.pager.HorizontalPager
 
 
 class CreateMovDirectionFragmentModel : ViewModel() {

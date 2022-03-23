@@ -1,6 +1,10 @@
 package com.example.sport.ui.view.components
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.shapes.Shape
+import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -47,6 +51,36 @@ fun EditText(
     editTextSttting: EditTextSttting,
     editTextPrompt: EditTextPrompt,
     editTextIcon: EditTextIcon,
+    shape: CornerBasedShape = MaterialTheme.shapes.small.copy(bottomEnd = ZeroCornerSize, bottomStart = ZeroCornerSize),
+    sidevalue: String,
+    onValueChange: (String) -> Unit
+) {
+    TextField(
+        modifier = modifier
+//            .focusable()
+        ,
+        value = sidevalue,
+        onValueChange = {
+            onValueChange(it)
+        },
+        label = editTextPrompt.lable,
+        placeholder = editTextPrompt.placeholder,
+        leadingIcon = editTextIcon.leadingIcon,
+        trailingIcon = editTextIcon.trailingIcon,
+        singleLine = true,
+        shape = shape,
+        keyboardOptions = editTextSttting.keyboardOptions,
+        keyboardActions = editTextSttting.keyboardActions,
+    )
+}
+
+@Composable
+fun EditText(
+    modifier: Modifier = Modifier,
+    editTextSttting: EditTextSttting,
+    editTextPrompt: EditTextPrompt,
+    editTextIcon: EditTextIcon,
+    shape: CornerBasedShape = MaterialTheme.shapes.small.copy(bottomEnd = ZeroCornerSize, bottomStart = ZeroCornerSize),
     sidevalue: RememberState<String>,
     onValueChange: ((String) -> Unit)? = null
 ) {
@@ -57,7 +91,7 @@ fun EditText(
             ,
         value = sidevalue.getState().value,
         onValueChange = {
-            sidevalue.set(it)
+            sidevalue set it
             if (onValueChange != null) {
                 onValueChange(it)
             }
@@ -67,6 +101,7 @@ fun EditText(
         leadingIcon = editTextIcon.leadingIcon,
         trailingIcon = editTextIcon.trailingIcon,
         singleLine = true,
+        shape = shape,
         keyboardOptions = editTextSttting.keyboardOptions,
         keyboardActions = editTextSttting.keyboardActions,
     )
@@ -148,11 +183,11 @@ class EditTextIconBox {
 
         fun Left(
             leadingIcon: @Composable () -> Unit
-        ) = EditTextIcon(leadingIcon = leadingIcon, trailingIcon = {})
+        ) = EditTextIcon(leadingIcon = leadingIcon, trailingIcon = null)
 
         fun Right(
             trailingIcon: @Composable () -> Unit
-        ) = EditTextIcon(leadingIcon = {}) {}
+        ) = EditTextIcon(leadingIcon = null, trailingIcon = trailingIcon)
 
         fun Null() = EditTextIcon(leadingIcon = null, trailingIcon = null)
     }
