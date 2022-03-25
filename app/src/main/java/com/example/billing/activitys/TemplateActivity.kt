@@ -1,9 +1,12 @@
 package com.example.billing.activitys
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.widget.Toast
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -11,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.billing.fragments.*
 import com.example.sport.ui.view.TopAppBar
 import com.example.billing.utils.RememberState
@@ -23,6 +28,20 @@ const val RE_INIT = "reInit"
 class TemplateActivity : BaseActivity() {
 
     val dataType: RememberState<String> = RememberState("null")
+
+    var model:ViewModel? = null
+
+    override fun onBackPressed() {
+        when(dataType.getState().value) {
+            "筛选" -> {
+                (model!! as ScreenFragmentModel).keyboardVisible set false
+            }
+
+            else -> {
+                super.onBackPressed()
+            }
+        }
+    }
 
     @Composable
     override fun StatusBar() {
@@ -69,7 +88,8 @@ class TemplateActivity : BaseActivity() {
                 AboutFragment(templateActivity = this)
             }
             "筛选" -> {
-                ScreenFragment()
+                ScreenFragment(templateActivity = this)
+                model = viewModel() as ScreenFragmentModel
             }
             "添加明细" -> {
                 AddDetailFragment(templateActivity = this)

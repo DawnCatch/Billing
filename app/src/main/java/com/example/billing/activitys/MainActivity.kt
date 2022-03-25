@@ -112,6 +112,7 @@ class MainActivity : BaseActivity() {
                                     scaffoldState.drawerState.open()
                                 }
 //                                screeningState = false
+//                                screeningState = flse
                             }
                         ) {
                             Icon(

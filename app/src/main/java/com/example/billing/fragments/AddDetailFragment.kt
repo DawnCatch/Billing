@@ -624,8 +624,7 @@ fun AddDetailAnimatedEditView() {
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun KeyboardView() {
-    val model: AddDetailFragmentModel = viewModel()
+fun KeyboardView(model: AddDetailFragmentModel = viewModel()) {
     val detailFormState = model.detailFormState!!
     val keyboardVisible = model.keyboardVisible!!
     val timeVisible = model.timeVisible!!
@@ -650,34 +649,38 @@ fun KeyboardView() {
             val onclick: (String) -> Unit = { it ->
                 var integer = ""
                 var float = ""
-                detail.money.value.toString().split(".").run {
-                    integer = this[0]
-                    float = this[1]
-                }
-                when (it) {
-                    "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" -> {
-                        if (pointAfter) {
-                            if (float == "0" && pointAfterFirstEnter) {
-                                float = it
-                                pointAfterFirstEnter = false
+                if (detail.money.value.toString().length < 9) {
+                    detail.money.value.toString().split(".").run {
+                        integer = this[0]
+                        float = this[1]
+                    }
+                    when (it) {
+                        "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" -> {
+                            if (pointAfter) {
+                                if (float == "0" && pointAfterFirstEnter) {
+                                    float = it
+                                    pointAfterFirstEnter = false
+                                } else {
+                                    if (float.length < 2) {
+                                        float += it
+                                    }
+                                }
                             } else {
-                                if (float.length < 2) {
-                                    float += it
+                                if (integer == "0") {
+                                    integer = it
+                                } else {
+                                    integer += it
                                 }
                             }
-                        } else {
-                            if (integer == "0") {
-                                integer = it
-                            } else {
-                                integer += it
-                            }
+                        }
+                        "." -> {
+                            pointAfter = true
                         }
                     }
-                    "." -> {
-                        pointAfter = true
-                    }
+                    detail.money set "$integer.${float}".toDouble()
+                }else {
+                    Toast.makeText(model.templateActivity!!,"超过最大长度",Toast.LENGTH_SHORT).show()
                 }
-                detail.money set "$integer.${float}".toDouble()
             }
             Row(Modifier.fillMaxWidth()) {
                 TextKeyboardItem(text = "7", modifier = modifier, onclick = onclick)
