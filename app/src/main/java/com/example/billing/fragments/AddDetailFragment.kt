@@ -649,7 +649,7 @@ fun KeyboardView(model: AddDetailFragmentModel = viewModel()) {
             val onclick: (String) -> Unit = { it ->
                 var integer = ""
                 var float = ""
-                if (detail.money.value.toString().length < 9) {
+                if (detail.money.value.toString().length < 9 || pointAfter || it == ".") {
                     detail.money.value.toString().split(".").run {
                         integer = this[0]
                         float = this[1]

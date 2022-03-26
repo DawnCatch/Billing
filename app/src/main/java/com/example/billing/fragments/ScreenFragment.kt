@@ -169,23 +169,20 @@ fun ScreenFragment(
                         Column(
                             Modifier
                                 .padding(start = 17.dp)
+                                .clickable(
+                                    indication = null,
+                                    interactionSource = MutableInteractionSource()
+                                ) {
+                                    focusManager.clearFocus()
+                                    if (model.money == screening.minMoney) {
+                                        model.keyboardVisible set !model.keyboardVisible.value
+                                    }
+                                    model.money = screening.minMoney
+                                }
                         ) {
                             Text(text = "最小", fontSize = 12.sp)
                             Text(
                                 text = screening.minMoney.getState().value.toString(),
-                                modifier = Modifier
-                                    .clickable(
-                                        indication = null,
-                                        interactionSource = MutableInteractionSource()
-                                    ) {
-                                        focusManager.clearFocus()
-                                        if (model.money == screening.minMoney) {
-                                            model.keyboardVisible set false
-                                        }else {
-                                            model.keyboardVisible set true
-                                            model.money = screening.minMoney
-                                        }
-                                    },
                                 color = Color.Black,
                                 maxLines = 1,
                                 fontSize = 16.sp
@@ -201,6 +198,16 @@ fun ScreenFragment(
                         Column(
                             Modifier
                                 .padding(end = 17.dp)
+                                .clickable(
+                                    indication = null,
+                                    interactionSource = MutableInteractionSource()
+                                ) {
+                                    focusManager.clearFocus()
+                                    if (model.money == screening.maxMoney) {
+                                        model.keyboardVisible set !model.keyboardVisible.value
+                                    }
+                                    model.money = screening.maxMoney
+                                }
                         ) {
                             Text(
                                 text = "最大",
@@ -210,19 +217,7 @@ fun ScreenFragment(
                             Text(
                                 text = screening.maxMoney.getState().value.toString(),
                                 modifier = Modifier
-                                    .align(Alignment.End)
-                                    .clickable(
-                                        indication = null,
-                                        interactionSource = MutableInteractionSource()
-                                    ) {
-                                        focusManager.clearFocus()
-                                        if (model.money == screening.maxMoney) {
-                                            model.keyboardVisible set false
-                                        }else {
-                                            model.keyboardVisible set true
-                                            model.money = screening.maxMoney
-                                        }
-                                    },
+                                    .align(Alignment.End),
                                 color = Color.Black,
                                 maxLines = 1,
                                 fontSize = 16.sp
@@ -260,7 +255,7 @@ fun ScreenAnimatedEditView(model: ScreenFragmentModel = viewModel()) {
             val onclick: (String) -> Unit = { it ->
                 var integer = ""
                 var float = ""
-                if (model.money!!.value.toString().length < 9) {
+                if (model.money!!.value.toString().length < 9 || pointAfter || it == ".") {
                     model.money!!.value.toString().split(".").run {
                         integer = this[0]
                         float = this[1]
