@@ -226,6 +226,16 @@ fun ScreenFragment(
                     }
                 }
             ))
+            SettingItemColum(key = "渠道", value = mutableListOf(
+                {
+                    
+                }
+            ))
+            SettingItemColum(key = "对象", value = mutableListOf(
+                {
+
+                }
+            ))
         }
 
         Box(
@@ -285,7 +295,7 @@ fun ScreenAnimatedEditView(model: ScreenFragmentModel = viewModel()) {
                     }
                     model.money!! set "$integer.${float}".toDouble()
                 } else {
-                    Toast.makeText(model.templateActivity!!,"超过最大长度",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(model.templateActivity!!, "超过最大长度", Toast.LENGTH_SHORT).show()
                 }
             }
             Row(Modifier.fillMaxWidth()) {
