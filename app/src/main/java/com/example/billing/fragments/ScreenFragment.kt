@@ -1,37 +1,52 @@
 package com.example.billing.fragments
 
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.GridCells
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.RememberObserver
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.billing.R
 import com.example.billing.activitys.Billing
+import com.example.billing.activitys.EXTRA_FRAGMENT
+import com.example.billing.activitys.STATE_BAR
 import com.example.billing.activitys.TemplateActivity
 import com.example.billing.utils.RememberState
+import com.example.billing.utils.datas.DetailTypeState
+import com.example.billing.utils.datas.MovDirection
 import com.example.billing.utils.datas.MovDirectionState
 import com.example.billing.utils.datas.Screening
 import com.example.billing.utils.getTimeOfToday
+import com.example.sport.ui.view.MDialog
 import com.example.sport.ui.view.SettingItemColum
 import com.example.sport.ui.view.components.EditText
 import com.example.sport.ui.view.components.EditTextIconBox.Companion.Null
@@ -40,10 +55,18 @@ import com.example.sport.ui.view.components.EditTextSettingBox.Companion.NumberO
 import com.example.sport.ui.view.components.EditTextSettingBox.Companion.TextOption
 
 class ScreenFragmentModel : ViewModel() {
+
+    @SuppressLint("StaticFieldLeak")
     var templateActivity: TemplateActivity? = null
 
     val keyboardVisible = RememberState(false)
     var money: RememberState<Double>? = null
+
+    val channels = mutableStateListOf<MovDirection>()
+    val channelVisible = RememberState(false)
+
+    val directions = mutableStateListOf<MovDirection>()
+    val directionVisible = RememberState(false)
 }
 
 @Composable
@@ -228,12 +251,32 @@ fun ScreenFragment(
             ))
             SettingItemColum(key = "渠道", value = mutableListOf(
                 {
-                    
+                    MovDirectionCheck(model.channelVisible, "渠道", model.channels, false) {
+                        val bundle = Bundle()
+                        bundle.putString(EXTRA_FRAGMENT, "渠道设置")
+                        bundle.putBoolean(STATE_BAR, false)
+                        templateActivity.startActivity(
+                            Intent(templateActivity, TemplateActivity::class.java).putExtras(
+                                bundle
+                            )
+                        )
+                    }
+                    MovDirectionGrid(triad = false, value = model.channels)
                 }
             ))
             SettingItemColum(key = "对象", value = mutableListOf(
                 {
-
+                    MovDirectionCheck(model.directionVisible, "对象", model.directions, true) {
+                        val bundle = Bundle()
+                        bundle.putString(EXTRA_FRAGMENT, "对象设置")
+                        bundle.putBoolean(STATE_BAR, false)
+                        templateActivity.startActivity(
+                            Intent(templateActivity, TemplateActivity::class.java).putExtras(
+                                bundle
+                            )
+                        )
+                    }
+                    MovDirectionGrid(triad = true, value = model.directions)
                 }
             ))
         }
@@ -242,6 +285,120 @@ fun ScreenFragment(
             modifier = Modifier.align(Alignment.BottomCenter),
         ) {
             ScreenAnimatedEditView()
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun MovDirectionGrid(
+    triad: Boolean,
+    value: SnapshotStateList<MovDirection>,
+    model: ScreenFragmentModel = viewModel()
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                if (triad) model.directionVisible set true
+                else model.channelVisible set true
+            }
+    ) {
+        LazyVerticalGrid(
+            cells = GridCells.Fixed(4)
+        ) {
+            items(value) { it ->
+                Text(text = it.name, modifier = Modifier.padding(10.dp))
+            }
+            if (value.size == 0) {
+                item {
+                    Text(text = "无", modifier = Modifier.padding(10.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MovDirectionCheck(
+    visible: RememberState<Boolean>,
+    contentDescription: String,
+    value: SnapshotStateList<MovDirection>,
+    type: Boolean,
+    model: ScreenFragmentModel = viewModel(),
+    create: () -> Unit
+) {
+    val list = Billing.db.getMovDirectionDao().queryWithType(type).asLiveData()
+    val listState = list.observeAsState(arrayListOf())
+
+    val itemHeight = 40
+
+    var height by remember {
+        mutableStateOf(0)
+    }
+    list.observe(model.templateActivity!!) {
+        if (it.isEmpty()) {
+            height = itemHeight
+        }else {
+            height = it.size * itemHeight
+        }
+    }
+
+    MDialog(modifier = Modifier.height(height.dp), visible = visible) {
+        listState.value.forEach {
+            if (it != MovDirectionState.All.getData()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                        .width(200.dp)
+                        .height(itemHeight.dp)
+                        .clickable {
+                            if (value.indexOf(it) != -1) {
+                                value.remove(it)
+                            } else {
+                                value.add(it)
+                            }
+                        }
+                ) {
+                    Text(
+                        text = it.name,
+                        textAlign = TextAlign.Left,
+                        modifier = Modifier
+                            .weight(3f)
+                            .padding(10.dp)
+                            .padding(start = 15.dp)
+                    )
+                    if (value.indexOf(it) != -1) {
+                        Box(Modifier.weight(1f)) {
+                            Text(text = (value.indexOf(it) + 1).toString())
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = contentDescription,
+                            )
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+            .width(200.dp)
+            .height(itemHeight.dp)
+            .clickable {
+                value.clear()
+                visible set false
+                create()
+            }
+        ) {
+            Text(
+                text = "添加设置",
+                textAlign = TextAlign.Left,
+                modifier = Modifier
+                    .weight(3f)
+                    .padding(10.dp)
+                    .padding(start = 15.dp)
+            )
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }

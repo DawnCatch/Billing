@@ -315,11 +315,17 @@ fun MovDirectionCheck(
     val list = Billing.db.getMovDirectionDao().queryWithType(type).asLiveData()
     val listState = list.observeAsState(arrayListOf())
 
+    val itemHeight = 40
+
     var height by remember {
         mutableStateOf(0)
     }
     list.observe(model.templateActivity!!) {
-        height = it.size * 30 + 45
+        if (it.isEmpty()) {
+            height = itemHeight
+        }else {
+            height = it.size * itemHeight
+        }
     }
 
     MDialog(modifier = Modifier.height(height.dp), visible = visible) {
@@ -327,6 +333,7 @@ fun MovDirectionCheck(
             if (it != MovDirectionState.All.getData()) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
                     .width(200.dp)
+                    .height(itemHeight.dp)
                     .clickable {
                         if (value.value == it.getState()) {
                             value set MovDirectionState.All
@@ -359,6 +366,7 @@ fun MovDirectionCheck(
         }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
             .width(200.dp)
+            .height(itemHeight.dp)
             .clickable {
                 value set MovDirectionState.All
                 visible set false
@@ -375,15 +383,6 @@ fun MovDirectionCheck(
             )
             Spacer(modifier = Modifier.weight(1f))
         }
-//        LazyColumn {
-//            items(listState.value) { it ->
-//
-//            }
-//
-//            item {
-//
-//            }
-//        }
     }
 }
 
@@ -391,8 +390,8 @@ fun MovDirectionCheck(
 @Composable
 fun DetailTypeGrid(
     triad: Boolean,
+    model: AddDetailFragmentModel = viewModel()
 ) {
-    val model: AddDetailFragmentModel = viewModel()
     val detailFormState = model.detailFormState!!
     val templateActivity = model.templateActivity!!
 
