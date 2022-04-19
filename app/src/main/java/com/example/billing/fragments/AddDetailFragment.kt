@@ -61,7 +61,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
 class AddDetailFragmentModel : ViewModel() {
-    var keyboardVisible: RememberState<Boolean>? = null
+    var keyboardVisible: RememberState<Boolean> = RememberState(false)
     var timeVisible: RememberState<Boolean>? = null
     var channelVisible: RememberState<Boolean>? = null
     var directionVisible: RememberState<Boolean>? = null
@@ -491,14 +491,13 @@ fun DetailTypeVerticalView(
 @Composable
 fun AddDetailAnimatedEditView() {
     val model: AddDetailFragmentModel = viewModel()
-    val keyboardVisible = RememberState(true)
     val timeVisible = RememberState(false)
     val channelVisible = RememberState(false)
     val directionVisible = RememberState(false)
     val detail = model.detail
     val templateActivity = model.templateActivity!!
     val detailFormState = model.detailFormState!!
-    model.keyboardVisible = keyboardVisible
+    val keyboardVisible = model.keyboardVisible
     model.timeVisible = timeVisible
     model.channelVisible = channelVisible
     model.directionVisible = directionVisible

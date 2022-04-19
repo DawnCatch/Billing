@@ -34,9 +34,21 @@ class TemplateActivity : BaseActivity() {
     override fun onBackPressed() {
         when(dataType.getState().value) {
             "筛选" -> {
-                (model!! as ScreenFragmentModel).keyboardVisible set false
+                if((model!! as ScreenFragmentModel).keyboardVisible.value) {
+                    (model!! as ScreenFragmentModel).keyboardVisible set false
+                }else {
+                    super.onBackPressed()
+                }
             }
-
+            "添加明细" -> {
+                if ((model!! as AddDetailFragmentModel).modifierState.getState().value) {
+                    finish()
+                    isRefreshing.value = true
+                    isRefreshing.value = false
+                } else {
+                    (model!! as AddDetailFragmentModel).erroVisible set true
+                }
+            }
             else -> {
                 super.onBackPressed()
             }
@@ -93,6 +105,7 @@ class TemplateActivity : BaseActivity() {
             }
             "添加明细" -> {
                 AddDetailFragment(templateActivity = this)
+                model = viewModel() as AddDetailFragmentModel
             }
             "类别设置" -> {
                 CreateDetailTypeFragment(templateActivity = this)
