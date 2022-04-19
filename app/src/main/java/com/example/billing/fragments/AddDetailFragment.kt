@@ -3,6 +3,7 @@ package com.example.billing.fragments
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -310,9 +312,17 @@ fun MovDirectionCheck(
     model: AddDetailFragmentModel = viewModel(),
     create: () -> Unit
 ) {
-    MDialog(modifier = Modifier.height(180.dp),visible = visible) {
-        val list = Billing.db.getMovDirectionDao().queryWithType(type).asLiveData()
-        val listState = list.observeAsState(arrayListOf())
+    val list = Billing.db.getMovDirectionDao().queryWithType(type).asLiveData()
+    val listState = list.observeAsState(arrayListOf())
+
+    var height by remember {
+        mutableStateOf(0)
+    }
+    list.observe(model.templateActivity!!) {
+        height = it.size * 30 + 45
+    }
+
+    MDialog(modifier = Modifier.height(height.dp), visible = visible) {
         listState.value.forEach {
             if (it != MovDirectionState.All.getData()) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
@@ -353,7 +363,8 @@ fun MovDirectionCheck(
                 value set MovDirectionState.All
                 visible set false
                 create()
-            }) {
+            }
+        ) {
             Text(
                 text = "添加设置",
                 textAlign = TextAlign.Left,
@@ -678,8 +689,8 @@ fun KeyboardView(model: AddDetailFragmentModel = viewModel()) {
                         }
                     }
                     detail.money set "$integer.${float}".toDouble()
-                }else {
-                    Toast.makeText(model.templateActivity!!,"超过最大长度",Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(model.templateActivity!!, "超过最大长度", Toast.LENGTH_SHORT).show()
                 }
             }
             Row(Modifier.fillMaxWidth()) {
