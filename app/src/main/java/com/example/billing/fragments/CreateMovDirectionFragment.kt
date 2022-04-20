@@ -247,7 +247,7 @@ fun CreateMovDirectionAnimatedEditView(model: CreateMovDirectionFragmentModel = 
                         }.start()
                         focusManager.clearFocus()
                     },
-                    editTextPrompt = EditTextPromptBox.TextAndText(
+                    editTextPrompt = EditTextPromptBox.textAndText(
                         "名称",
                         "点击写名称..."
                     ),

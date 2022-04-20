@@ -14,10 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.*
@@ -31,6 +28,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -202,8 +200,8 @@ fun HostBaseFragment(
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color(98, 0, 238),
-                                Color.White
+                                MaterialTheme.colors.primary,
+                                MaterialTheme.colors.background
                             )
                         )
                     )
@@ -286,17 +284,29 @@ fun HostBaseFragment(
                                 .clip(RoundedCornerShape(25, 25, 0, 0))
                                 .background(Color.Gray.copy(0.3f))
                         ) {
-                            Text(
-                                text = if (timeBoxState.month.getState().value != 13) it.time.toDate() else "${it.time.month}月",
-                                Modifier
-                                    .padding(start = 6.dp)
-                                    .weight(1f)
-                            )
-                            if (left != 0.0) {
-                                Text(text = "收入:$left")
-                            }
-                            if (right != 0.0) {
-                                Text(text = "支出:$right", modifier = Modifier.padding(start = 10.dp))
+                            ProvideTextStyle(
+                                value = TextStyle(
+                                    color = MaterialTheme.colors.onSecondary
+                                )
+                            ) {
+                                Text(
+                                    text = if (timeBoxState.month.getState().value != 13) it.time.toDate() else "${it.time.month}月",
+                                    Modifier
+                                        .padding(start = 6.dp)
+                                        .weight(1f),
+                                )
+                                if (left != 0.0) {
+                                    Text(
+                                        text = "收入:$left",
+                                        modifier = Modifier.padding(end = 5.dp)
+                                    )
+                                }
+                                if (right != 0.0) {
+                                    Text(
+                                        text = "支出:$right",
+                                        modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -430,7 +440,8 @@ fun UserBox(
                 modifier = Modifier
                     .size(22.dp)
                     .align(Alignment.Bottom)
-                    .padding(bottom = 5.dp)
+                    .padding(bottom = 5.dp),
+                tint = MaterialTheme.colors.onPrimary
             )
         }
     }
@@ -554,7 +565,8 @@ fun TimeBox() {
                 modifier = Modifier
                     .size(22.dp)
                     .align(Alignment.Bottom)
-                    .padding(bottom = 5.dp)
+                    .padding(bottom = 5.dp),
+                tint = MaterialTheme.colors.onPrimary
             )
         }
     }

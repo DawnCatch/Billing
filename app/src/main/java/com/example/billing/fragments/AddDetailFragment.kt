@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -43,6 +44,7 @@ import com.example.billing.activitys.Billing
 import com.example.billing.activitys.EXTRA_FRAGMENT
 import com.example.billing.activitys.STATE_BAR
 import com.example.billing.activitys.TemplateActivity
+import com.example.billing.ui.theme.*
 import com.example.sport.ui.view.MDialog
 import com.example.sport.ui.view.TimeSelectView
 import com.example.sport.ui.view.TopAppBar
@@ -171,9 +173,11 @@ fun AddDetailTopTitleView() {
     val coroutineScope = rememberCoroutineScope()
 
     if (model.erroVisible.getState().value) {
-        MDialog(onDismissRequest = {
-            model.erroVisible set false
-        }) {
+        MDialog(
+            onDismissRequest = {
+                model.erroVisible set false
+            }
+        ) {
             Text(text = "原来的明细格式已被删除", fontSize = 26.sp)
             Text(text = "现将使用以下明细格式")
             Row(
@@ -205,7 +209,7 @@ fun AddDetailTopTitleView() {
                         .width(1.dp)
                         .height(16.dp)
                         .background(
-                            Color.Black.copy(0.5f)
+                            MaterialTheme.colors.onBackground.copy(0.5f)
                         )
                 )
                 Text(
@@ -257,7 +261,7 @@ fun AddDetailTopTitleView() {
                     contentDescription = "取消",
                     modifier = Modifier
                         .size(32.dp, 32.dp),
-                    tint = Color.White
+                    tint = MaterialTheme.colors.onPrimary
                 )
             }
         }
@@ -291,7 +295,7 @@ fun AddDetailTopTitleView() {
                                 .padding(top = 13.dp)
                                 .size(70.dp, 5.dp)
                                 .background(
-                                    color = if (pagerState.currentPage == index) Color.Green else Color.Unspecified,
+                                    color = if (pagerState.currentPage == index)MaterialTheme.colors.secondary else Color.Unspecified,
                                     shape = RoundedCornerShape(100)
                                 )
                         )
@@ -323,7 +327,7 @@ fun MovDirectionCheck(
     list.observe(model.templateActivity!!) {
         if (it.isEmpty()) {
             height = itemHeight
-        }else {
+        } else {
             height = it.size * itemHeight
         }
     }
@@ -464,11 +468,7 @@ fun DetailTypeVerticalView(
             modifier = Modifier
                 .size(48.dp, 48.dp)
                 .background(
-                    color = if (detailFormState.detailType.getState().value == detailType.getState()) Color.Yellow else Color(
-                        242,
-                        243,
-                        245
-                    ),
+                    color = if (detailFormState.detailType.getState().value == detailType.getState()) MaterialTheme.colors.itemSelectedBackgroud else MaterialTheme.colors.itemBackgroud,
                     shape = RoundedCornerShape(100)
                 )
         ) {
@@ -577,7 +577,7 @@ fun AddDetailAnimatedEditView() {
         ) {
             Column {
                 Row(
-                    Modifier.fillMaxWidth(),
+                    Modifier.fillMaxWidth().background(MaterialTheme.colors.background),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -593,7 +593,7 @@ fun AddDetailAnimatedEditView() {
                             focusManager.clearFocus()
                             keyboardVisible set true
                         },
-                        editTextPrompt = EditTextPromptBox.TextAndText(
+                        editTextPrompt = EditTextPromptBox.textAndText(
                             "备注",
                             "点击写备注..."
                         ),
@@ -602,7 +602,7 @@ fun AddDetailAnimatedEditView() {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_message),
                                     contentDescription = "备注",
-                                    modifier = Modifier.size(24.dp, 24.dp)
+                                    modifier = Modifier.size(24.dp, 24.dp),
                                 )
                             },
                             trailingIcon = {
@@ -616,7 +616,6 @@ fun AddDetailAnimatedEditView() {
                                             focusManager.clearFocus()
                                             keyboardVisible set true
                                         },
-                                    color = Color.Black,
                                     maxLines = 1,
                                     fontSize = 22.sp
                                 )
@@ -648,7 +647,7 @@ fun KeyboardView(model: AddDetailFragmentModel = viewModel()) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .background(Color(213, 213, 215))
+                .background(MaterialTheme.colors.keyboard)
         ) {
             val modifier = Modifier
                 .weight(1f)
@@ -714,7 +713,7 @@ fun KeyboardView(model: AddDetailFragmentModel = viewModel()) {
                         }
                     },
                     modifier = Modifier
-                        .background(Color(248, 238, 235))
+                        .background(MaterialTheme.colors.keyboardTime)
                         .then(modifier)
                 ) {
                     timeVisible set true
@@ -727,7 +726,7 @@ fun KeyboardView(model: AddDetailFragmentModel = viewModel()) {
                 TextKeyboardItem(
                     text = if (detail.channel.getState().value == MovDirectionState.All) "渠道" else detail.channel.getState().value.name.getState().value,
                     modifier = Modifier
-                        .background(Color(144, 218, 228, 255))
+                        .background(MaterialTheme.colors.keyboardMov)
                         .then(modifier)
                 ) {
                     channelVisible set true
@@ -740,7 +739,7 @@ fun KeyboardView(model: AddDetailFragmentModel = viewModel()) {
                 TextKeyboardItem(
                     text = if (detail.direction.getState().value == MovDirectionState.All) "对象" else detail.direction.getState().value.name.getState().value,
                     modifier = Modifier
-                        .background(Color(144, 218, 228, 255))
+                        .background(MaterialTheme.colors.keyboardMov)
                         .then(modifier)
                 ) {
                     directionVisible set true
@@ -772,7 +771,7 @@ fun KeyboardView(model: AddDetailFragmentModel = viewModel()) {
                 }
                 TextKeyboardItem(
                     text = "完成", modifier = Modifier
-                        .background(Color.Yellow)
+                        .background(MaterialTheme.colors.itemSelectedBackgroud)
                         .then(modifier),
                     onclick = {
                         if (detail.money.value != 0.0) {

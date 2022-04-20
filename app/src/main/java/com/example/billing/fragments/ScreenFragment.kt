@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -40,6 +41,8 @@ import com.example.billing.activitys.Billing
 import com.example.billing.activitys.EXTRA_FRAGMENT
 import com.example.billing.activitys.STATE_BAR
 import com.example.billing.activitys.TemplateActivity
+import com.example.billing.ui.theme.keyboard
+import com.example.billing.ui.theme.keyboardTime
 import com.example.billing.utils.RememberState
 import com.example.billing.utils.datas.DetailTypeState
 import com.example.billing.utils.datas.MovDirection
@@ -50,7 +53,7 @@ import com.example.sport.ui.view.MDialog
 import com.example.sport.ui.view.SettingItemColum
 import com.example.sport.ui.view.components.EditText
 import com.example.sport.ui.view.components.EditTextIconBox.Companion.Null
-import com.example.sport.ui.view.components.EditTextPromptBox.Companion.TextAndText
+import com.example.sport.ui.view.components.EditTextPromptBox.Companion.textAndText
 import com.example.sport.ui.view.components.EditTextSettingBox.Companion.NumberOption
 import com.example.sport.ui.view.components.EditTextSettingBox.Companion.TextOption
 
@@ -89,7 +92,7 @@ fun ScreenFragment(
                             editTextSttting = TextOption {
                                 focusManager.clearFocus()
                             },
-                            editTextPrompt = TextAndText(
+                            editTextPrompt = textAndText(
                                 "年", ""
                             ),
                             editTextIcon = Null(),
@@ -103,7 +106,7 @@ fun ScreenFragment(
                             editTextSttting = TextOption {
                                 focusManager.clearFocus()
                             },
-                            editTextPrompt = TextAndText(
+                            editTextPrompt = textAndText(
                                 "月", ""
                             ),
                             editTextIcon = Null(),
@@ -117,7 +120,7 @@ fun ScreenFragment(
                             editTextSttting = TextOption {
                                 focusManager.clearFocus()
                             },
-                            editTextPrompt = TextAndText(
+                            editTextPrompt = textAndText(
                                 "日", ""
                             ),
                             editTextIcon = Null(),
@@ -146,7 +149,7 @@ fun ScreenFragment(
                             editTextSttting = TextOption {
                                 focusManager.clearFocus()
                             },
-                            editTextPrompt = TextAndText(
+                            editTextPrompt = textAndText(
                                 "年", ""
                             ),
                             editTextIcon = Null(),
@@ -160,7 +163,7 @@ fun ScreenFragment(
                             editTextSttting = TextOption {
                                 focusManager.clearFocus()
                             },
-                            editTextPrompt = TextAndText(
+                            editTextPrompt = textAndText(
                                 "月", ""
                             ),
                             editTextIcon = Null(),
@@ -174,7 +177,7 @@ fun ScreenFragment(
                             editTextSttting = TextOption {
                                 focusManager.clearFocus()
                             },
-                            editTextPrompt = TextAndText(
+                            editTextPrompt = textAndText(
                                 "日", ""
                             ),
                             editTextIcon = Null(),
@@ -412,7 +415,7 @@ fun ScreenAnimatedEditView(model: ScreenFragmentModel = viewModel()) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .background(Color(213, 213, 215))
+                .background(MaterialTheme.colors.keyboard)
         ) {
             val modifier = Modifier
                 .weight(1f)

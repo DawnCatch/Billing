@@ -62,7 +62,7 @@ fun ColumMenuItem(
     text:String,
     icon:Int = -1,
     id:Int,
-    highLight:Color = Color(55, 0, 179),
+    highLight:Color = MaterialTheme.colors.primary,
     lowLight:Color = Color(156, 156, 156),
 //    navController: RememberState<String>? = null,
     navController: PagerState
@@ -142,6 +142,7 @@ fun MenuColum(
 ) {
     Column(
         modifier = Modifier
+            .background(MaterialTheme.colors.background)
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
         content = menugroud
@@ -160,7 +161,7 @@ fun MenuRow(
             cutoutShape = MaterialTheme.shapes.small.copy(
                 CornerSize(percent = 50)
             ),
-            backgroundColor = Color(241, 241, 241),
+            backgroundColor = MaterialTheme.colors.primaryVariant,
             modifier = Modifier
 //                .border(BorderStroke(0.1.dp, Color.Black))
                 .fillMaxWidth()

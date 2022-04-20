@@ -30,6 +30,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.billing.R
 import com.example.billing.activitys.Billing
 import com.example.billing.activitys.TemplateActivity
+import com.example.billing.ui.theme.itemBackgroud
+import com.example.billing.ui.theme.itemSelectedBackgroud
 import com.example.billing.utils.datas.DetailType
 import com.example.billing.utils.datas.DetailTypeState
 import com.example.sport.ui.view.TopAppBar
@@ -112,7 +114,7 @@ fun CreateDetailTypeTopTitleView(model: CreateDetailTypeFragmentModel = viewMode
                     imageVector = Icons.Filled.ArrowBack,
                     contentDescription = null,
                     modifier = Modifier.size(32.dp, 32.dp),
-                    tint = Color.White
+                    tint = MaterialTheme.colors.onPrimary
                 )
             }
         },
@@ -134,7 +136,7 @@ fun CreateDetailTypeTopTitleView(model: CreateDetailTypeFragmentModel = viewMode
                     imageVector = Icons.Filled.Add,
                     contentDescription = null,
                     modifier = Modifier.size(32.dp, 32.dp),
-                    tint = Color.White
+                    tint = MaterialTheme.colors.onPrimary
                 )
             }
         }
@@ -160,13 +162,9 @@ fun CreateDetailTypeTopTitleView(model: CreateDetailTypeFragmentModel = viewMode
                             }
                         )
                         .background(
-                            if (pagerState.currentPage == index) Color.Black else Color(
-                                98,
-                                0,
-                                238
-                            )
+                            if (pagerState.currentPage == index) MaterialTheme.colors.onBackground else MaterialTheme.colors.primary
                         )
-                        .border(2.dp, color = Color.Black)
+                        .border(2.dp, color = MaterialTheme.colors.onBackground)
                         .clickable {
                             coroutineScope.launch { pagerState.animateScrollToPage(index) }
                         },
@@ -176,11 +174,7 @@ fun CreateDetailTypeTopTitleView(model: CreateDetailTypeFragmentModel = viewMode
                         text = title,
                         modifier = Modifier.padding(vertical = 5.dp),
                         fontSize = 12.sp,
-                        color = if (pagerState.currentPage == index) Color(
-                            98,
-                            0,
-                            238
-                        ) else Color.Black,
+                        color = if (pagerState.currentPage == index) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground,
                     )
                 }
             }
@@ -226,7 +220,7 @@ fun CreateDetailTypeAnimatedEditView(model: CreateDetailTypeFragmentModel = view
                         }.start()
                         focusManager.clearFocus()
                     },
-                    editTextPrompt = EditTextPromptBox.TextAndText(
+                    editTextPrompt = EditTextPromptBox.textAndText(
                         "名称",
                         "点击写名称..."
                     ),
@@ -235,7 +229,8 @@ fun CreateDetailTypeAnimatedEditView(model: CreateDetailTypeFragmentModel = view
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_message),
                                 contentDescription = "名称",
-                                modifier = Modifier.size(24.dp, 24.dp)
+                                modifier = Modifier.size(24.dp, 24.dp),
+                                tint = MaterialTheme.colors.onBackground
                             )
                         },
                         trailingIcon = {
@@ -252,8 +247,10 @@ fun CreateDetailTypeAnimatedEditView(model: CreateDetailTypeFragmentModel = view
                                                 .insert(model.detailFormState!!.detailType.getState().value.getData())
                                         }.start()
                                         focusManager.clearFocus()
-                                    },
-                                color = Color.Black,
+                                    }
+                                    .padding(end = 15.dp)
+                                ,
+                                color = MaterialTheme.colors.onBackground,
                                 maxLines = 1,
                                 fontSize = 22.sp
                             )
@@ -321,7 +318,7 @@ fun DetailTypeHorizontalView(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(MaterialTheme.colors.background)
             .padding(8.dp)
             .clickable(
                 indication = null,
@@ -334,11 +331,7 @@ fun DetailTypeHorizontalView(
             modifier = Modifier
                 .size(48.dp, 48.dp)
                 .background(
-                    color = if (detailFormState.detailType.getState().value == detailType.getState()) Color.Yellow else Color(
-                        242,
-                        243,
-                        245
-                    ),
+                    color = if (detailFormState.detailType.getState().value == detailType.getState()) MaterialTheme.colors.itemSelectedBackgroud else MaterialTheme.colors.itemBackgroud,
                     shape = RoundedCornerShape(100)
                 )
         ) {

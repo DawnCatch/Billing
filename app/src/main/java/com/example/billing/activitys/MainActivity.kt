@@ -83,18 +83,13 @@ class MainActivity : BaseActivity() {
         val topContent = RememberState<@Composable () -> Unit>(
             {
                 Text(
-                    text = title.getState().value,
+                    text = title.getState().value
                 )
             }
         )
         Scaffold(
             scaffoldState = scaffoldState,
             drawerContent = {
-//                if (screeningState == true) {
-//                    ScreenFragment(screening = Screening())
-//                }else {
-//
-//                }
                 Navigation(scaffoldState)
             },
             drawerGesturesEnabled = drawerGesturesEnabled,
@@ -111,14 +106,12 @@ class MainActivity : BaseActivity() {
                                 scope.launch {
                                     scaffoldState.drawerState.open()
                                 }
-//                                screeningState = false
-//                                screeningState = flse
                             }
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Menu,
                                 contentDescription = null,
-                                tint = Color.White
+                                tint = MaterialTheme.colors.onPrimary
                             )
                         }
                     },
@@ -143,10 +136,11 @@ class MainActivity : BaseActivity() {
                                 painter = painterResource(id = R.drawable.ic_screening),
                                 contentDescription = null,
                                 modifier = Modifier.size(24.dp, 24.dp),
-                                tint = Color.White
+                                tint = MaterialTheme.colors.onPrimary
                             )
                         }
-                    }) {
+                    }
+                ) {
                     topContent.getState().value()
                 }
             },
@@ -313,7 +307,6 @@ fun TopBar(
     val visible = RememberState(false)
     Text(
         text = title.getState().value,
-        color = Color.White,
         modifier = Modifier.clickable(
             indication = null,
             interactionSource = MutableInteractionSource()

@@ -4,10 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.Toast
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Switch
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
@@ -69,7 +66,7 @@ class TemplateActivity : BaseActivity() {
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = null,
                         modifier = Modifier.size(32.dp, 32.dp),
-                        tint = Color.White
+                        tint = MaterialTheme.colors.onPrimary
                     )
                 }
             }

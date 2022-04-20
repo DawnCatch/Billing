@@ -45,7 +45,6 @@ fun SettingItemView(
         Text(
             text = selectlist[nowItemindex], textAlign = TextAlign.End, modifier = Modifier
                 .weight(0.5f)
-//                .padding(end = 10.dp)
         )
     }
 

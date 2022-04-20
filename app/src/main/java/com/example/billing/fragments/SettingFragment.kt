@@ -27,7 +27,8 @@ fun SettingFragment(context: Context) {
         item {
             SettingItemColum(key = "系统", value = mutableListOf(
                 {
-                    SettingItemView(title = "侧边栏初始化位置",
+                    SettingItemView(
+                        title = "侧边栏初始化位置",
                         selectlist = mutableListOf(
                             "上次关闭位置", "明细", "图表", "借入", "借出"
                         ),
@@ -35,15 +36,19 @@ fun SettingFragment(context: Context) {
                         onClickeditem = {
                             Billing.sSettings.navDefault set it
                             Billing.saveData()
-                        })
+                        }
+                    )
                 },
                 {
-                    SettingItemView(title = "悬浮按钮位置", checketext = mutableListOf(
-                        "靠右", "居中"
-                    ), default = Billing.sSettings.bottomBarStyle.value, onCheckedChange = {
-                        Billing.sSettings.bottomBarStyle set it
-                        Billing.saveData()
-                    }) {
+                    SettingItemView(
+                        title = "悬浮按钮位置",
+                        checketext = mutableListOf(
+                            "靠右", "居中"
+                        ), default = Billing.sSettings.bottomBarStyle.value, onCheckedChange = {
+                            Billing.sSettings.bottomBarStyle set it
+                            Billing.saveData()
+                        }
+                    ) {
                         Scaffold(
                             modifier = Modifier.height(100.dp),
                             bottomBar = {
@@ -68,6 +73,19 @@ fun SettingFragment(context: Context) {
                             else FabPosition.End,
                         ) {}
                     }
+                },
+                {
+                    SettingItemView(
+                        title = "主题",
+                        selectlist = mutableListOf(
+                            "黑色","紫色","红色"
+                        ),
+                        default = Billing.sSettings.theme.getState().value,
+                        onClickeditem = {
+                            Billing.sSettings.theme set it
+                            Billing.saveData()
+                        }
+                    )
                 }
             ))
         }

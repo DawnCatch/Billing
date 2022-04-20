@@ -1,20 +1,22 @@
 package com.example.sport.ui.view.components
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.billing.ui.theme.focusedColor
+import com.example.billing.ui.theme.keyboard
 import com.example.billing.utils.RememberState
 import com.google.accompanist.insets.LocalWindowInsets
 
@@ -51,14 +53,16 @@ fun EditText(
     editTextSttting: EditTextSttting,
     editTextPrompt: EditTextPrompt,
     editTextIcon: EditTextIcon,
-    shape: CornerBasedShape = MaterialTheme.shapes.small.copy(bottomEnd = ZeroCornerSize, bottomStart = ZeroCornerSize),
+    shape: CornerBasedShape = MaterialTheme.shapes.small.copy(
+        bottomEnd = ZeroCornerSize,
+        bottomStart = ZeroCornerSize
+    ),
     sidevalue: String,
     onValueChange: (String) -> Unit
 ) {
     TextField(
-        modifier = modifier
+        modifier = modifier,
 //            .focusable()
-        ,
         value = sidevalue,
         onValueChange = {
             onValueChange(it)
@@ -80,15 +84,30 @@ fun EditText(
     editTextSttting: EditTextSttting,
     editTextPrompt: EditTextPrompt,
     editTextIcon: EditTextIcon,
-    shape: CornerBasedShape = MaterialTheme.shapes.small.copy(bottomEnd = ZeroCornerSize, bottomStart = ZeroCornerSize),
+    shape: CornerBasedShape = MaterialTheme.shapes.small.copy(
+        bottomEnd = ZeroCornerSize,
+        bottomStart = ZeroCornerSize
+    ),
     sidevalue: RememberState<String>,
+    colors: TextFieldColors = TextFieldDefaults.textFieldColors(
+        textColor = MaterialTheme.colors.onBackground,
+        focusedLabelColor = MaterialTheme.colors.focusedColor,
+        unfocusedLabelColor = MaterialTheme.colors.onBackground,
+        focusedIndicatorColor = MaterialTheme.colors.focusedColor,
+        backgroundColor = MaterialTheme.colors.primaryVariant,
+        cursorColor = MaterialTheme.colors.onBackground,
+        leadingIconColor = MaterialTheme.colors.onBackground,
+        trailingIconColor = MaterialTheme.colors.onBackground,
+        placeholderColor = MaterialTheme.colors.onBackground
+    ),
     onValueChange: ((String) -> Unit)? = null
 ) {
 //    OutlinedTextField
     TextField(
-        modifier = modifier
+        modifier = Modifier
+//            .background(color = MaterialTheme.colors.background)
+            .then(modifier),
 //            .focusable()
-            ,
         value = sidevalue.getState().value,
         onValueChange = {
             sidevalue set it
@@ -104,6 +123,7 @@ fun EditText(
         shape = shape,
         keyboardOptions = editTextSttting.keyboardOptions,
         keyboardActions = editTextSttting.keyboardActions,
+        colors = colors
     )
 }
 
@@ -115,17 +135,20 @@ data class EditTextSttting(
 class EditTextSettingBox {
     companion object {
         fun Option(
-            keyboardType:KeyboardType,
+            keyboardType: KeyboardType,
             keyboardActions: () -> Unit
         ) = EditTextSttting(
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = ImeAction.Done
+            ),
             keyboardActions = KeyboardActions(onAny = {
                 keyboardActions()
             })
         )
 
         fun NumberOption(
-            keyboardActions:() -> Unit
+            keyboardActions: () -> Unit
         ) = Option(
             keyboardType = KeyboardType.Number,
             keyboardActions = keyboardActions
@@ -147,25 +170,29 @@ data class EditTextPrompt(
 
 class EditTextPromptBox {
     companion object {
-        fun ContentAndContent(
+        @Composable
+        fun contentAndContent(
             lable: @Composable () -> Unit,
             placeholder: @Composable () -> Unit
         ) = EditTextPrompt(lable = lable, placeholder = placeholder)
 
-        fun ContentAndText(
+        @Composable
+        fun contentAndText(
             lable: @Composable () -> Unit,
             placeholder: String,
         ) = EditTextPrompt(lable = lable, placeholder = { Text(text = placeholder) })
 
-        fun TextAndContent(
+        @Composable
+        fun textAndContent(
             lable: String,
             placeholder: @Composable () -> Unit
         ) = EditTextPrompt(lable = { Text(text = lable) }, placeholder = placeholder)
 
-        fun TextAndText(
+        @Composable
+        fun textAndText(
             lable: String,
-            placeholder: String
-        ) = EditTextPrompt(lable = { Text(text = lable) },placeholder = { Text(text = placeholder) })
+            placeholder: String,
+        ) = EditTextPrompt(lable = { Text(text = lable) }, placeholder = { Text(text = placeholder) })
     }
 }
 

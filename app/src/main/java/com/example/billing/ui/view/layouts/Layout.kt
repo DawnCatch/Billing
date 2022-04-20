@@ -48,7 +48,7 @@ fun MDialog(
             Column(
                 modifier = modifier
                     .verticalScroll(rememberScrollState())
-                    .background(Color.White, shape = RoundedCornerShape(5.dp)),
+                    .background(MaterialTheme.colors.background,shape = RoundedCornerShape(5.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
                 content = content
@@ -66,7 +66,7 @@ fun MDialog(
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
-                .background(Color.White, shape = RoundedCornerShape(5.dp)),
+                .background(MaterialTheme.colors.background, shape = RoundedCornerShape(5.dp)),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             content = content
@@ -93,7 +93,8 @@ fun SettingItemColum(
             ) {
                 Text(
                     text = key,
-                    color = Color(104, 107, 222),
+//                    color = Color(104, 107, 222),
+                    color = MaterialTheme.colors.primary,
                     modifier = Modifier.padding(start = 10.dp, bottom = 5.dp, top = 3.dp)
                 )
             }
@@ -125,7 +126,7 @@ fun TopAppBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(height = height)
-            .background(Color(98, 0, 238))
+            .background(MaterialTheme.colors.primary)
     ) {
         Box(contentAlignment = Alignment.CenterStart, modifier = modifier) {
             onLeft?.let {
@@ -139,13 +140,12 @@ fun TopAppBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-//            ProvideTextStyle(value = MaterialTheme.typography.h6) {
             ProvideTextStyle(
                 value = TextStyle(
                     fontWeight = FontWeight.Medium,
                     fontSize = 20.sp,
                     letterSpacing = 0.15.sp,
-                    color = Color.White
+                    color = MaterialTheme.colors.onPrimary
                 )
             ) {
                 title?.let {
