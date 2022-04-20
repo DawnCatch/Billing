@@ -4,11 +4,21 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.WindowCompat
 import com.example.billing.ui.theme.BillingTheme
 import com.example.billing.utils.RememberState
+import com.google.accompanist.insets.LocalWindowInsets
+import com.google.accompanist.insets.rememberInsetsPaddingValues
+import com.google.accompanist.insets.statusBarsPadding
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import java.lang.Exception
 
 abstract class BaseActivity : ComponentActivity() {
@@ -17,6 +27,7 @@ abstract class BaseActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         try {
             mContext = this
             if (intent != null) {
@@ -31,8 +42,10 @@ abstract class BaseActivity : ComponentActivity() {
         }
         setContent {
             BillingTheme {
+                val systemUiController = rememberSystemUiController()
+                systemUiController.setStatusBarColor(MaterialTheme.colors.primary, darkIcons = false)
                 Surface(
-                    color = MaterialTheme.colors.background
+                    color = MaterialTheme.colors.surface
                 ) {
                     Column {
                         if (StatusBar.getState().value) {
