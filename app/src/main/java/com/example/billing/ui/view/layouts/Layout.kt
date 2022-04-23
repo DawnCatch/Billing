@@ -48,7 +48,7 @@ fun MDialog(
             Column(
                 modifier = modifier
                     .verticalScroll(rememberScrollState())
-                    .background(MaterialTheme.colors.background,shape = RoundedCornerShape(5.dp)),
+                    .background(MaterialTheme.colors.background, shape = RoundedCornerShape(5.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
                 content = content
@@ -77,26 +77,28 @@ fun MDialog(
 
 @Composable
 fun SettingItemColum(
-    key: String,
+    key: String? = null,
+    modifier: Modifier = Modifier,
     value: MutableList<@Composable () -> Unit>
 ) {
     MCard(
         modifier = Modifier.padding(bottom = 7.dp)
     ) {
         Column(
-//            modifier = Modifier.verticalScroll(rememberScrollState())
+            modifier = modifier
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Gray.copy(0.3f))
-            ) {
-                Text(
-                    text = key,
-//                    color = Color(104, 107, 222),
-                    color = MaterialTheme.colors.primary,
-                    modifier = Modifier.padding(start = 10.dp, bottom = 5.dp, top = 3.dp)
-                )
+            if (key != null) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Gray.copy(0.3f))
+                ) {
+                    Text(
+                        text = key,
+                        color = MaterialTheme.colors.primary,
+                        modifier = Modifier.padding(start = 10.dp, bottom = 5.dp, top = 3.dp)
+                    )
+                }
             }
             for (i in 0 until value.size) {
                 value.get(i)()

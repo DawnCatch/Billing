@@ -1,6 +1,7 @@
 package com.example.sport.ui.view.components
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.ZeroCornerSize
@@ -58,6 +59,17 @@ fun EditText(
         bottomStart = ZeroCornerSize
     ),
     sidevalue: String,
+    colors: TextFieldColors = TextFieldDefaults.textFieldColors(
+        textColor = MaterialTheme.colors.onBackground,
+        focusedLabelColor = MaterialTheme.colors.focusedColor,
+        unfocusedLabelColor = MaterialTheme.colors.onBackground,
+        focusedIndicatorColor = MaterialTheme.colors.focusedColor,
+        backgroundColor = MaterialTheme.colors.primaryVariant,
+        cursorColor = MaterialTheme.colors.onBackground,
+        leadingIconColor = MaterialTheme.colors.onBackground,
+        trailingIconColor = MaterialTheme.colors.onBackground,
+        placeholderColor = MaterialTheme.colors.onBackground
+    ),
     onValueChange: (String) -> Unit
 ) {
     TextField(
@@ -75,6 +87,65 @@ fun EditText(
         shape = shape,
         keyboardOptions = editTextSttting.keyboardOptions,
         keyboardActions = editTextSttting.keyboardActions,
+        colors = colors
+    )
+}
+
+@Composable
+fun EditTextDouble(
+    modifier: Modifier = Modifier,
+    editTextSttting: EditTextSttting,
+    editTextPrompt: EditTextPrompt,
+    editTextIcon: EditTextIcon,
+    shape: CornerBasedShape = MaterialTheme.shapes.small.copy(
+        bottomEnd = ZeroCornerSize,
+        bottomStart = ZeroCornerSize
+    ),
+    sidevalue: RememberState<Double>,
+    colors: TextFieldColors = TextFieldDefaults.textFieldColors(
+        textColor = MaterialTheme.colors.onBackground,
+        focusedLabelColor = MaterialTheme.colors.focusedColor,
+        unfocusedLabelColor = MaterialTheme.colors.onBackground,
+        focusedIndicatorColor = MaterialTheme.colors.focusedColor,
+        backgroundColor = MaterialTheme.colors.primaryVariant,
+        cursorColor = MaterialTheme.colors.onBackground,
+        leadingIconColor = MaterialTheme.colors.onBackground,
+        trailingIconColor = MaterialTheme.colors.onBackground,
+        placeholderColor = MaterialTheme.colors.onBackground
+    ),
+    onValueChange: ((String) -> Unit)? = null
+) {
+    val a = sidevalue.value
+//    OutlinedTextField
+    TextField(
+        modifier = Modifier
+//            .background(color = MaterialTheme.colors.background)
+            .then(modifier),
+//            .focusable()
+        value = sidevalue.getState().value.toString(),
+        onValueChange = {
+            try {
+                sidevalue set it.toDouble()
+                if (onValueChange != null) {
+                    onValueChange(it)
+                }
+                Log.w("nol",sidevalue.value.toString())
+
+            }catch (e:NumberFormatException) {
+                sidevalue set a
+                Log.w("erro",sidevalue.value.toString())
+
+            }
+        },
+        label = editTextPrompt.lable,
+        placeholder = editTextPrompt.placeholder,
+        leadingIcon = editTextIcon.leadingIcon,
+        trailingIcon = editTextIcon.trailingIcon,
+        singleLine = true,
+        shape = shape,
+        keyboardOptions = editTextSttting.keyboardOptions,
+        keyboardActions = editTextSttting.keyboardActions,
+        colors = colors
     )
 }
 

@@ -66,6 +66,17 @@ val Colors.focusedColor:Color
         }
     }
 
+val Colors.surfaceColor:Color
+    get() = when(Billing.sSettings.theme.getState().value) {
+        0 -> {
+            primaryVariant
+        }
+
+        else -> {
+            Color.White
+        }
+    }
+
 val Colors.itemBackgroud:Color
     get() = when(Billing.sSettings.theme.getState().value) {
         0 -> {
@@ -133,11 +144,11 @@ val Colors.keyboardMov:Color
         }
 
         1 -> {
-            Color(144, 218, 228, 255)
+            Color(144, 218, 228)
         }
 
         else -> {
-            Color(144, 218, 228, 255)
+            Color(144, 218, 228)
         }
     }
 

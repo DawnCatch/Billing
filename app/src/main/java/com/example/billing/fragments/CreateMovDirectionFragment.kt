@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -33,6 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.billing.R
 import com.example.billing.activitys.Billing
 import com.example.billing.activitys.TemplateActivity
+import com.example.billing.ui.theme.itemBackgroud
 import com.example.billing.utils.RememberState
 import com.example.billing.utils.datas.MovDirection
 import com.example.billing.utils.datas.MovDirectionState
@@ -177,7 +179,7 @@ fun MovDirectionHorizontalView(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(MaterialTheme.colors.background)
             .padding(8.dp)
             .clickable(
                 indication = null,
@@ -214,13 +216,14 @@ fun MovDirectionHorizontalView(
 fun CreateMovDirectionAnimatedEditView(model: CreateMovDirectionFragmentModel = viewModel()) {
     val detailFormState = model.movDirectionFormState!!
     AnimatedVisibility(
+        modifier = Modifier.background(color = MaterialTheme.colors.itemBackgroud),
         visible = detailFormState.visible.getState().value,
         enter = fadeIn() + expandVertically(),
         exit = fadeOut() + shrinkVertically()
     ) {
         Column(
             modifier = Modifier
-                .background(color = Color(242, 243, 245))
+                .background(color = MaterialTheme.colors.itemBackgroud)
                 .fillMaxWidth()
         ) {
             Row(

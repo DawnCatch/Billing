@@ -4,6 +4,7 @@ import android.database.Cursor
 import androidx.room.*
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -110,13 +111,32 @@ interface DetailDao {
                 "AND channel LIKE :channel " +
                 "ORDER BY time DESC"
     )
-    fun A(
+    fun queryWithAllValue(
         startTime: String, endTime: String,
         minMoney: Double, maxMoney: Double,
         message: String,
         type: String,
         direction: String,
         channel: String
+    ): Flow<List<Detail>>
+
+    @Query(
+        "SELECT * FROM details WHERE " +
+                "time BETWEEN :startTime AND :endTime " +
+                "AND money BETWEEN :minMoney AND :maxMoney " +
+                "AND message LIKE :message " +
+                "AND type LIKE :type " +
+                "AND direction IN (:direction) " +
+                "AND channel IN (:channel) " +
+                "ORDER BY time DESC"
+    )
+    fun queryWithAllValue(
+        startTime: String, endTime: String,
+        minMoney: Double, maxMoney: Double,
+        message: String,
+        type: String,
+        direction: List<String> = listOf(),
+        channel: List<String> = listOf()
     ): Flow<List<Detail>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

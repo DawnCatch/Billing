@@ -41,11 +41,14 @@ data class MovDirectionState(
             type = type
         )
 
-        val All = create(1, "无", false)
+        val All = create(0,"全部",false)
+
+        val NullF = create(1, "无", false)
+        val NullT = create(2,"无", true)
 
         //渠道
-        val ALiPay = create(2, "支付宝", false)
-        val WeCharPay = create(3, "微信支付", false)
+        val ALiPay = create(3, "支付宝", false)
+        val WeCharPay = create(4, "微信支付", false)
     }
 
     override fun equals(other: Any?): Boolean {

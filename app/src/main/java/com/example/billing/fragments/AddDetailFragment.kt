@@ -79,8 +79,8 @@ class AddDetailFragmentModel : ViewModel() {
         money = 0.0,
         message = "",
         type = DetailTypeState.All.getData(),
-        direction = MovDirectionState.All.getData(),
-        channel = MovDirectionState.All.getData()
+        direction = MovDirectionState.NullT.getData(),
+        channel = MovDirectionState.NullF.getData()
     ).getState()
     val modifierState = RememberState(true)
     val erroVisible = RememberState(false)
@@ -334,13 +334,13 @@ fun MovDirectionCheck(
 
     MDialog(modifier = Modifier.height(height.dp), visible = visible) {
         listState.value.forEach {
-            if (it != MovDirectionState.All.getData()) {
+            if (it != MovDirectionState.NullT.getData() && it != MovDirectionState.NullF.getData()) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
                     .width(200.dp)
                     .height(itemHeight.dp)
                     .clickable {
                         if (value.value == it.getState()) {
-                            value set MovDirectionState.All
+                            value set if (type) MovDirectionState.NullT else MovDirectionState.NullF
                         } else {
                             value set it.getState()
                         }
@@ -372,7 +372,7 @@ fun MovDirectionCheck(
             .width(200.dp)
             .height(itemHeight.dp)
             .clickable {
-                value set MovDirectionState.All
+                value set if (type) MovDirectionState.NullT else MovDirectionState.NullF
                 visible set false
                 create()
             }
@@ -724,7 +724,7 @@ fun KeyboardView(model: AddDetailFragmentModel = viewModel()) {
                 TextKeyboardItem(text = "5", modifier = modifier, onclick = onclick)
                 TextKeyboardItem(text = "6", modifier = modifier, onclick = onclick)
                 TextKeyboardItem(
-                    text = if (detail.channel.getState().value == MovDirectionState.All) "渠道" else detail.channel.getState().value.name.getState().value,
+                    text = if (detail.channel.getState().value == MovDirectionState.NullF) "渠道" else detail.channel.getState().value.name.getState().value,
                     modifier = Modifier
                         .background(MaterialTheme.colors.keyboardMov)
                         .then(modifier)
@@ -737,7 +737,7 @@ fun KeyboardView(model: AddDetailFragmentModel = viewModel()) {
                 TextKeyboardItem(text = "2", modifier = modifier, onclick = onclick)
                 TextKeyboardItem(text = "3", modifier = modifier, onclick = onclick)
                 TextKeyboardItem(
-                    text = if (detail.direction.getState().value == MovDirectionState.All) "对象" else detail.direction.getState().value.name.getState().value,
+                    text = if (detail.direction.getState().value == MovDirectionState.NullT) "对象" else detail.direction.getState().value.name.getState().value,
                     modifier = Modifier
                         .background(MaterialTheme.colors.keyboardMov)
                         .then(modifier)

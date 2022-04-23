@@ -4,22 +4,15 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.*
@@ -27,9 +20,14 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,25 +35,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.billing.R
-import com.example.billing.activitys.Billing
-import com.example.billing.activitys.EXTRA_FRAGMENT
-import com.example.billing.activitys.STATE_BAR
-import com.example.billing.activitys.TemplateActivity
+import com.example.billing.activitys.*
 import com.example.billing.ui.theme.keyboard
-import com.example.billing.ui.theme.keyboardTime
+import com.example.billing.ui.theme.surfaceColor
 import com.example.billing.utils.RememberState
-import com.example.billing.utils.datas.DetailTypeState
-import com.example.billing.utils.datas.MovDirection
-import com.example.billing.utils.datas.MovDirectionState
-import com.example.billing.utils.datas.Screening
-import com.example.billing.utils.getTimeOfToday
+import com.example.billing.utils.datas.*
 import com.example.sport.ui.view.MDialog
 import com.example.sport.ui.view.SettingItemColum
-import com.example.sport.ui.view.components.EditText
+import com.example.sport.ui.view.components.*
 import com.example.sport.ui.view.components.EditTextIconBox.Companion.Null
 import com.example.sport.ui.view.components.EditTextPromptBox.Companion.textAndText
 import com.example.sport.ui.view.components.EditTextSettingBox.Companion.NumberOption
-import com.example.sport.ui.view.components.EditTextSettingBox.Companion.TextOption
+import com.google.gson.Gson
 
 class ScreenFragmentModel : ViewModel() {
 
@@ -65,68 +56,146 @@ class ScreenFragmentModel : ViewModel() {
     val keyboardVisible = RememberState(false)
     var money: RememberState<Double>? = null
 
-    val channels = mutableStateListOf<MovDirection>()
+    var status = mutableStateOf(false)
+    var min = mutableStateOf(0.0)
+    var max = mutableStateOf(9999999.0)
+
+    val channels = mutableStateListOf<MovDirection>(MovDirectionState.NullF.getData())
     val channelVisible = RememberState(false)
 
-    val directions = mutableStateListOf<MovDirection>()
+    val directions = mutableStateListOf<MovDirection>(MovDirectionState.NullT.getData())
     val directionVisible = RememberState(false)
 }
 
+@OptIn(ExperimentalAnimationApi::class)
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun ScreenFragment(
     templateActivity: TemplateActivity,
     model: ScreenFragmentModel = viewModel()
 ) {
     model.templateActivity = templateActivity
-    val screening = Screening()
+    var startYear by remember {
+        mutableStateOf(1)
+    }
+    var startMonth by remember {
+        mutableStateOf(1)
+    }
+    var startDay by remember {
+        mutableStateOf(1)
+    }
+    var endYear by remember {
+        mutableStateOf(5000)
+    }
+    var endMonth by remember {
+        mutableStateOf(1)
+    }
+    var endDay by remember {
+        mutableStateOf(1)
+    }
+    val screening = ScreeningPlus(
+        startTime = "$startYear/$startMonth/$startDay",
+        endTime = "$endYear/$endMonth/$endDay",
+        minMoney = model.min.value,
+        maxMoney = model.max.value,
+        channels = model.channels, directions = model.directions
+    )
     val focusManager = LocalFocusManager.current
-    Box(Modifier.fillMaxSize()) {
-        Column {
+    Box(
+        Modifier
+            .fillMaxSize()
+    ) {
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState())
+        ) {
+
             SettingItemColum(key = "时间", value = mutableListOf(
                 {
                     Row {
                         EditText(
                             modifier = Modifier
                                 .weight(1f)
+                                .onFocusChanged {
+                                    model.keyboardVisible set false
+                                }
                                 .focusable(),
-                            editTextSttting = TextOption {
+                            editTextSttting = NumberOption {
                                 focusManager.clearFocus()
                             },
                             editTextPrompt = textAndText(
                                 "年", ""
                             ),
                             editTextIcon = Null(),
-                            sidevalue = screening.startTime.year.toStringState(),
+                            sidevalue = startYear.toString(),
                             shape = RoundedCornerShape(0)
-                        )
+                        ) {
+                            try {
+                                startYear = it.toInt()
+                            } catch (e: NumberFormatException) {
+                                startYear = 1
+                                Toast.makeText(
+                                    model.templateActivity!!,
+                                    "非法输入",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                         EditText(
                             modifier = Modifier
                                 .weight(1f)
+                                .onFocusChanged {
+                                    model.keyboardVisible set false
+                                }
                                 .focusable(),
-                            editTextSttting = TextOption {
+                            editTextSttting = NumberOption {
                                 focusManager.clearFocus()
                             },
                             editTextPrompt = textAndText(
                                 "月", ""
                             ),
                             editTextIcon = Null(),
-                            sidevalue = screening.startTime.month.toStringState(),
+                            sidevalue = startMonth.toString(),
                             shape = RoundedCornerShape(0)
-                        )
+                        ) {
+                            try {
+                                startMonth = it.toInt()
+                            } catch (e: NumberFormatException) {
+                                startMonth = 1
+                                Toast.makeText(
+                                    model.templateActivity!!,
+                                    "非法输入",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                         EditText(
                             modifier = Modifier
                                 .weight(1f)
+                                .onFocusChanged {
+                                    model.keyboardVisible set false
+                                }
                                 .focusable(),
-                            editTextSttting = TextOption {
+                            editTextSttting = NumberOption {
                                 focusManager.clearFocus()
                             },
                             editTextPrompt = textAndText(
                                 "日", ""
                             ),
                             editTextIcon = Null(),
-                            sidevalue = screening.startTime.dayOfMonth.toStringState(),
+                            sidevalue = startDay.toString(),
                             shape = RoundedCornerShape(0)
-                        )
+                        ) {
+                            try {
+                                startDay = it.toInt()
+                            } catch (e: NumberFormatException) {
+                                startDay = 1
+                                Toast.makeText(
+                                    model.templateActivity!!,
+                                    "非法输入",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                     }
                 },
                 {
@@ -145,45 +214,87 @@ fun ScreenFragment(
                         EditText(
                             modifier = Modifier
                                 .weight(1f)
+                                .onFocusChanged {
+                                    model.keyboardVisible set false
+                                }
                                 .focusable(),
-                            editTextSttting = TextOption {
+                            editTextSttting = NumberOption {
                                 focusManager.clearFocus()
                             },
                             editTextPrompt = textAndText(
                                 "年", ""
                             ),
                             editTextIcon = Null(),
-                            sidevalue = screening.endTime.year.toStringState(),
+                            sidevalue = endYear.toString(),
                             shape = RoundedCornerShape(0)
-                        )
+                        ) {
+                            try {
+                                endYear = it.toInt()
+                            } catch (e: NumberFormatException) {
+                                endYear = 5000
+                                Toast.makeText(
+                                    model.templateActivity!!,
+                                    "非法输入",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                         EditText(
                             modifier = Modifier
                                 .weight(1f)
+                                .onFocusChanged {
+                                    model.keyboardVisible set false
+                                }
                                 .focusable(),
-                            editTextSttting = TextOption {
+                            editTextSttting = NumberOption {
                                 focusManager.clearFocus()
                             },
                             editTextPrompt = textAndText(
                                 "月", ""
                             ),
                             editTextIcon = Null(),
-                            sidevalue = screening.endTime.month.toStringState(),
+                            sidevalue = endMonth.toString(),
                             shape = RoundedCornerShape(0)
-                        )
+                        ) {
+                            try {
+                                endMonth = it.toInt()
+                            } catch (e: NumberFormatException) {
+                                endMonth = 1
+                                Toast.makeText(
+                                    model.templateActivity!!,
+                                    "非法输入",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                         EditText(
                             modifier = Modifier
                                 .weight(1f)
+                                .onFocusChanged {
+                                    model.keyboardVisible set false
+                                }
                                 .focusable(),
-                            editTextSttting = TextOption {
+                            editTextSttting = NumberOption {
                                 focusManager.clearFocus()
                             },
                             editTextPrompt = textAndText(
                                 "日", ""
                             ),
                             editTextIcon = Null(),
-                            sidevalue = screening.endTime.dayOfMonth.toStringState(),
+                            sidevalue = endDay.toString(),
                             shape = RoundedCornerShape(0)
-                        )
+                        ) {
+                            try {
+                                endDay = it.toInt()
+                            } catch (e: NumberFormatException) {
+                                endDay = 1
+                                Toast.makeText(
+                                    model.templateActivity!!,
+                                    "非法输入",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                     }
                 }
             ))
@@ -194,25 +305,53 @@ fun ScreenFragment(
                     ) {
                         Column(
                             Modifier
+                                .weight(1f)
+                                .background(
+                                    if (model.keyboardVisible.getState().value && !model.status.value)
+                                        Brush.horizontalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colors.onBackground,
+                                                MaterialTheme.colors.surfaceColor
+                                            )
+                                        )
+                                    else
+                                        Brush.horizontalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colors.surfaceColor,
+                                                MaterialTheme.colors.surfaceColor
+                                            )
+                                        )
+                                )
                                 .padding(start = 17.dp)
+                                .padding(vertical = 5.dp)
                                 .clickable(
                                     indication = null,
                                     interactionSource = MutableInteractionSource()
                                 ) {
                                     focusManager.clearFocus()
-                                    if (model.money == screening.minMoney) {
+                                    if (!model.status.value) {
                                         model.keyboardVisible set !model.keyboardVisible.value
+                                    }else {
+                                        model.status.value = false
+                                        model.keyboardVisible set true
                                     }
-                                    model.money = screening.minMoney
                                 }
                         ) {
-                            Text(text = "最小", fontSize = 12.sp)
-                            Text(
-                                text = screening.minMoney.getState().value.toString(),
-                                color = Color.Black,
-                                maxLines = 1,
-                                fontSize = 16.sp
-                            )
+                            ProvideTextStyle(
+                                value = TextStyle(
+                                    color = if (model.keyboardVisible.getState().value && !model.status.value)
+                                        MaterialTheme.colors.background
+                                    else
+                                        MaterialTheme.colors.onBackground
+                                )
+                            ) {
+                                Text(text = "最小", fontSize = 12.sp)
+                                Text(
+                                    text = model.min.value.toString(),
+                                    maxLines = 1,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                         Icon(
                             painter = painterResource(id = R.drawable.ic_go),
@@ -223,36 +362,76 @@ fun ScreenFragment(
                         )
                         Column(
                             Modifier
+                                .weight(1f)
+                                .background(
+                                    if (model.keyboardVisible.getState().value && model.status.value)
+                                        Brush.horizontalGradient(
+                                            startX = Float.POSITIVE_INFINITY,
+                                            endX = 0.0f,
+                                            colors = listOf(
+                                                MaterialTheme.colors.onBackground,
+                                                MaterialTheme.colors.surfaceColor
+                                            )
+                                        )
+                                    else
+                                        Brush.horizontalGradient(
+                                            startX = Float.POSITIVE_INFINITY,
+                                            endX = 0.0f,
+                                            colors = listOf(
+                                                MaterialTheme.colors.surfaceColor,
+                                                MaterialTheme.colors.surfaceColor
+                                            )
+                                        )
+                                )
                                 .padding(end = 17.dp)
+                                .padding(vertical = 5.dp)
                                 .clickable(
                                     indication = null,
                                     interactionSource = MutableInteractionSource()
                                 ) {
                                     focusManager.clearFocus()
-                                    if (model.money == screening.maxMoney) {
+                                    if (model.status.value) {
                                         model.keyboardVisible set !model.keyboardVisible.value
+                                    }else {
+                                        model.status.value = true
+                                        model.keyboardVisible set true
                                     }
-                                    model.money = screening.maxMoney
                                 }
                         ) {
-                            Text(
-                                text = "最大",
-                                fontSize = 12.sp,
-                                modifier = Modifier.align(Alignment.End)
-                            )
-                            Text(
-                                text = screening.maxMoney.getState().value.toString(),
-                                modifier = Modifier
-                                    .align(Alignment.End),
-                                color = Color.Black,
-                                maxLines = 1,
-                                fontSize = 16.sp
-                            )
+                            ProvideTextStyle(
+                                value = TextStyle(
+                                    color = if (model.keyboardVisible.getState().value && model.status.value)
+                                        MaterialTheme.colors.background
+                                    else
+                                        MaterialTheme.colors.onBackground
+                                )
+                            ) {
+                                Text(
+                                    text = "最大",
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.align(Alignment.End)
+                                )
+                                Text(
+                                    text = model.max.value.toString(),
+                                    modifier = Modifier
+                                        .align(Alignment.End),
+                                    maxLines = 1,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                     }
                 }
             ))
-            SettingItemColum(key = "渠道", value = mutableListOf(
+            SettingItemColum(key = "渠道", modifier = Modifier.height(
+                if (model.channels.size == 0) {
+                    71.dp
+                } else if (model.channels.size > 4) {
+                    113.dp
+                } else {
+                    71.dp
+                }
+            ), value = mutableListOf(
                 {
                     MovDirectionCheck(model.channelVisible, "渠道", model.channels, false) {
                         val bundle = Bundle()
@@ -267,7 +446,15 @@ fun ScreenFragment(
                     MovDirectionGrid(triad = false, value = model.channels)
                 }
             ))
-            SettingItemColum(key = "对象", value = mutableListOf(
+            SettingItemColum(key = "对象", modifier = Modifier.height(
+                if (model.directions.size == 0) {
+                    71.dp
+                } else if (model.directions.size > 4) {
+                    113.dp
+                } else {
+                    71.dp
+                }
+            ), value = mutableListOf(
                 {
                     MovDirectionCheck(model.directionVisible, "对象", model.directions, true) {
                         val bundle = Bundle()
@@ -282,8 +469,91 @@ fun ScreenFragment(
                     MovDirectionGrid(triad = true, value = model.directions)
                 }
             ))
+            val list = screening.getScreened().asLiveData()
+            val listState = list.observeAsState(arrayListOf())
+            LazyColumn(
+                Modifier.height(500.dp)
+//                Modifier.weight(1f)
+            ) {
+                itemsIndexed(listState.value) { index, it ->
+                    if (index == 0 ||
+                        (listState.value[index - 1].time.toDate() != it.time.toDate()) ||
+                        (listState.value[index - 1].time.month != it.time.month)
+                    ) {
+                        val headTime = listState.value[index].time
+                        var left by remember {
+                            mutableStateOf(0.0)
+                        }
+                        var right by remember {
+                            mutableStateOf(0.0)
+                        }
+                        list.observe(model.templateActivity!!) { details ->
+                            left = 0.0
+                            right = 0.0
+                            details.forEach {
+                                if (it.time.toDate() == headTime.toDate()) {
+                                    if (it.type.triad) {
+                                        left += it.money
+                                    } else {
+                                        right += it.money
+                                    }
+                                }
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 5.dp, vertical = 8.dp)
+                                .clip(RoundedCornerShape(25, 25, 0, 0))
+                                .background(Color.Gray.copy(0.3f))
+                        ) {
+                            ProvideTextStyle(
+                                value = TextStyle(
+                                    color = MaterialTheme.colors.onSecondary
+                                )
+                            ) {
+                                Text(
+                                    text = it.time.toDate(),
+                                    Modifier
+                                        .padding(start = 6.dp)
+                                        .weight(1f),
+                                )
+                                if (left != 0.0) {
+                                    Text(
+                                        text = "收入:$left",
+                                        modifier = Modifier.padding(end = 5.dp)
+                                    )
+                                }
+                                if (right != 0.0) {
+                                    Text(
+                                        text = "支出:$right",
+                                        modifier = Modifier.padding(
+                                            start = 5.dp,
+                                            end = 5.dp
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    DetailItem(detail = it) {
+                        val bundle = Bundle()
+                        bundle.putString(EXTRA_FRAGMENT, "添加明细")
+                        bundle.putBoolean(STATE_BAR, false)
+                        bundle.putBoolean(RE_INIT, true)
+                        bundle.putString("DetailData", Gson().toJson(it))
+                        model.templateActivity!!.startActivity(
+                            Intent(
+                                model.templateActivity!!,
+                                TemplateActivity::class.java
+                            ).putExtras(
+                                bundle
+                            )
+                        )
+                    }
+                }
+            }
         }
-
         Box(
             modifier = Modifier.align(Alignment.BottomCenter),
         ) {
@@ -313,11 +583,6 @@ fun MovDirectionGrid(
             items(value) { it ->
                 Text(text = it.name, modifier = Modifier.padding(10.dp))
             }
-            if (value.size == 0) {
-                item {
-                    Text(text = "无", modifier = Modifier.padding(10.dp))
-                }
-            }
         }
     }
 }
@@ -342,45 +607,46 @@ fun MovDirectionCheck(
     list.observe(model.templateActivity!!) {
         if (it.isEmpty()) {
             height = itemHeight
-        }else {
-            height = it.size * itemHeight
+        } else {
+            height = (it.size + 1) * itemHeight
         }
     }
 
     MDialog(modifier = Modifier.height(height.dp), visible = visible) {
         listState.value.forEach {
-            if (it != MovDirectionState.All.getData()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically, modifier = Modifier
-                        .width(200.dp)
-                        .height(itemHeight.dp)
-                        .clickable {
-                            if (value.indexOf(it) != -1) {
-                                value.remove(it)
-                            } else {
-                                value.add(it)
+            Row(
+                verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                    .width(200.dp)
+                    .height(itemHeight.dp)
+                    .clickable {
+                        if (value.indexOf(it) != -1) {
+                            value.remove(it)
+                            if (value.size == 0) {
+                                value.add(if (type) MovDirectionState.NullT.getData() else MovDirectionState.NullF.getData())
                             }
+                        } else {
+                            value.add(it)
                         }
-                ) {
-                    Text(
-                        text = it.name,
-                        textAlign = TextAlign.Left,
-                        modifier = Modifier
-                            .weight(3f)
-                            .padding(10.dp)
-                            .padding(start = 15.dp)
-                    )
-                    if (value.indexOf(it) != -1) {
-                        Box(Modifier.weight(1f)) {
-                            Text(text = (value.indexOf(it) + 1).toString())
-                            Icon(
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = contentDescription,
-                            )
-                        }
-                    } else {
-                        Spacer(modifier = Modifier.weight(1f))
                     }
+            ) {
+                Text(
+                    text = it.name,
+                    textAlign = TextAlign.Left,
+                    modifier = Modifier
+                        .weight(3f)
+                        .padding(10.dp)
+                        .padding(start = 15.dp)
+                )
+                if (value.indexOf(it) != -1) {
+                    Box(Modifier.weight(1f)) {
+                        Text(text = (value.indexOf(it) + 1).toString())
+                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = contentDescription,
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -389,6 +655,7 @@ fun MovDirectionCheck(
             .height(itemHeight.dp)
             .clickable {
                 value.clear()
+                value.add(if (type) MovDirectionState.NullT.getData() else MovDirectionState.NullF.getData())
                 visible set false
                 create()
             }
@@ -425,11 +692,12 @@ fun ScreenAnimatedEditView(model: ScreenFragmentModel = viewModel()) {
             val onclick: (String) -> Unit = { it ->
                 var integer = ""
                 var float = ""
-                if (model.money!!.value.toString().length < 9 || pointAfter || it == ".") {
-                    model.money!!.value.toString().split(".").run {
-                        integer = this[0]
-                        float = this[1]
-                    }
+                if ((if (model.status.value) model.max.value else model.min.value).toString().length < 9 || pointAfter || it == ".") {
+                    (if (model.status.value) model.max.value else model.min.value).toString().split(".")
+                        .run {
+                            integer = this[0]
+                            float = this[1]
+                        }
                     when (it) {
                         "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" -> {
                             if (pointAfter) {
@@ -453,7 +721,11 @@ fun ScreenAnimatedEditView(model: ScreenFragmentModel = viewModel()) {
                             pointAfter = true
                         }
                     }
-                    model.money!! set "$integer.${float}".toDouble()
+                    if (model.status.value) {
+                        model.max.value = "$integer.${float}".toDouble()
+                    } else {
+                        model.min.value = "$integer.${float}".toDouble()
+                    }
                 } else {
                     Toast.makeText(model.templateActivity!!, "超过最大长度", Toast.LENGTH_SHORT).show()
                 }
@@ -482,10 +754,11 @@ fun ScreenAnimatedEditView(model: ScreenFragmentModel = viewModel()) {
                 ) {
                     var integer = 0
                     var float = 0
-                    model.money!!.value.toString().split(".").run {
-                        integer = this[0].toInt()
-                        float = this[1].toInt()
-                    }
+                    (if (model.status.value) model.max.value else model.min.value).toString().split(".")
+                        .run {
+                            integer = this[0].toInt()
+                            float = this[1].toInt()
+                        }
                     if (pointAfter) {
                         float /= 10
                         if (float == 0) {
@@ -495,7 +768,11 @@ fun ScreenAnimatedEditView(model: ScreenFragmentModel = viewModel()) {
                     } else {
                         integer /= 10
                     }
-                    model.money!! set "$integer.${float}".toDouble()
+                    if (model.status.value) {
+                        model.max.value = "$integer.${float}".toDouble()
+                    } else {
+                        model.min.value = "$integer.${float}".toDouble()
+                    }
                 }
             }
         }

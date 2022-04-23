@@ -193,7 +193,7 @@ fun CreateDetailTypeAnimatedEditView(model: CreateDetailTypeFragmentModel = view
     ) {
         Column(
             modifier = Modifier
-                .background(color = Color(242, 243, 245))
+                .background(color = MaterialTheme.colors.itemBackgroud)
                 .fillMaxWidth()
         ) {
             Row(

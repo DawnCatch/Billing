@@ -2,9 +2,7 @@ package com.example.billing.utils.datas
 
 import androidx.room.TypeConverter
 import com.example.billing.utils.RememberState
-import com.google.gson.Gson
 import com.google.gson.annotations.Expose
-import com.google.gson.reflect.TypeToken
 import java.util.*
 
 fun intToTime(value: Int?) = try {
@@ -50,11 +48,20 @@ fun getTimeOfToday():TimeState {
     )
 }
 
+data class TimePlus(
+    var year: String,
+    var month: String,
+    var dayOfMonth: String,
+    var dayOfWeek: String
+) {
+    fun toDate() = "$year/$month/$dayOfMonth"
+}
+
 data class Time(
-    val year: Int,
-    val month: Int,
-    val dayOfMonth: Int,
-    val dayOfWeek: Int
+    var year: Int,
+    var month: Int,
+    var dayOfMonth: Int,
+    var dayOfWeek: Int
 ) {
     fun getState(): TimeState = TimeState(
         year = RememberState(year),

@@ -12,9 +12,7 @@ import com.example.sport.utils.Local
 import com.example.sport.utils.Local.LOCAL_DATA
 import com.example.billing.utils.Screen
 import com.example.billing.utils.Settings
-import com.example.billing.utils.datas.BillingDatabase
-import com.example.billing.utils.datas.DetailTypeState
-import com.example.billing.utils.datas.MovDirectionState
+import com.example.billing.utils.datas.*
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.tencent.mmkv.MMKV
@@ -68,7 +66,8 @@ class Billing:Application() {
             )
             db.getMovDirectionDao().inserts(
                 listOf(
-                    MovDirectionState.All.getData(),
+                    MovDirectionState.NullF.getData(),
+                    MovDirectionState.NullT.getData(),
                     MovDirectionState.ALiPay.getData(),
                     MovDirectionState.WeCharPay.getData()
                 )

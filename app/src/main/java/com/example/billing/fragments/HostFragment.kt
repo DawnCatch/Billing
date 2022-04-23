@@ -3,25 +3,19 @@ package com.example.billing.fragments
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -35,18 +29,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.sqlite.db.SimpleSQLiteQuery
 import com.example.billing.R
 import com.example.billing.activitys.*
-import com.example.billing.utils.*
 import com.example.sport.ui.view.MCard
 import com.example.sport.ui.view.MDialog
-import com.example.sport.ui.view.SettingItemColum
 import com.example.sport.ui.view.TimeSelectView
 import com.example.billing.utils.RememberState
 import com.example.billing.utils.datas.*
@@ -55,9 +44,6 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.observeOn
 import kotlinx.coroutines.launch
 
 @Composable
@@ -74,6 +60,7 @@ class HostFragmentModel : ViewModel() {
         listOf(RememberState(0.0), RememberState(0.0)),
         listOf(RememberState(0.0), RememberState(0.0)),
     )
+
     @SuppressLint("StaticFieldLeak")
     var mainActivity: MainActivity? = null
 }
@@ -310,7 +297,18 @@ fun HostBaseFragment(
                             }
                         }
                     }
-                    DetailItem(detail = it)
+                    DetailItem(detail = it) {
+                        val bundle = Bundle()
+                        bundle.putString(EXTRA_FRAGMENT, "添加明细")
+                        bundle.putBoolean(STATE_BAR, false)
+                        bundle.putBoolean(RE_INIT, true)
+                        bundle.putString("DetailData", Gson().toJson(it))
+                        model.mainActivity!!.startActivity(
+                            Intent(model.mainActivity!!, TemplateActivity::class.java).putExtras(
+                                bundle
+                            )
+                        )
+                    }
                 }
                 item {
                     Spacer(modifier = Modifier.height(60.dp))
@@ -321,22 +319,13 @@ fun HostBaseFragment(
 }
 
 @Composable
-fun DetailItem(detail: Detail, model: HostFragmentModel = viewModel()) {
+fun DetailItem(detail: Detail, onclick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
             .clickable {
-                val bundle = Bundle()
-                bundle.putString(EXTRA_FRAGMENT, "添加明细")
-                bundle.putBoolean(STATE_BAR, false)
-                bundle.putBoolean(RE_INIT, true)
-                bundle.putString("DetailData", Gson().toJson(detail))
-                model.mainActivity!!.startActivity(
-                    Intent(model.mainActivity!!, TemplateActivity::class.java).putExtras(
-                        bundle
-                    )
-                )
+                onclick()
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
