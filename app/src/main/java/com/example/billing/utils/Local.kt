@@ -2,7 +2,6 @@ package com.example.sport.utils
 
 import android.content.SharedPreferences
 import com.example.billing.activitys.Billing
-import com.example.billing.utils.BillingData
 import com.example.billing.utils.Settings
 
 object Local {
@@ -23,20 +22,5 @@ object Local {
         editor.putString(SETTINGS,settingsGson)
         editor.apply()
         Billing.sSettings = settings
-    }
-
-    fun getBillingData(): BillingData {
-        val billingDataString:String? =
-            Billing.sPreferences.getString(BILLINGDATA,"")
-        val billingData: BillingData? = Billing.sGson.fromJson(billingDataString, BillingData::class.java)
-        return billingData?: BillingData()
-    }
-
-    fun setBillingData(billingData: BillingData) {
-        val billingDataGson = Billing.sGson.toJson(billingData)
-        val editor:SharedPreferences.Editor = Billing.sPreferences.edit()
-        editor.putString(BILLINGDATA,billingDataGson)
-        editor.apply()
-        Billing.sBillingData = billingData
     }
 }

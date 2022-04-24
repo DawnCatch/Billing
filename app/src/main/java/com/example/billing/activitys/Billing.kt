@@ -7,7 +7,6 @@ import android.content.SharedPreferences
 import android.util.DisplayMetrics
 import android.view.WindowManager
 import androidx.room.Room
-import com.example.billing.utils.BillingData
 import com.example.sport.utils.Local
 import com.example.sport.utils.Local.LOCAL_DATA
 import com.example.billing.utils.Screen
@@ -20,7 +19,6 @@ import com.tencent.mmkv.MMKV
 class Billing:Application() {
     companion object {
         lateinit var sSettings: Settings
-        lateinit var sBillingData: BillingData
         lateinit var sBillingDatabase: BillingDatabase
         lateinit var sGson: Gson
         lateinit var sPreferences: SharedPreferences
@@ -36,7 +34,6 @@ class Billing:Application() {
 
         fun saveData() {
             Local.setSetting(sSettings)
-            Local.setBillingData(sBillingData)
         }
     }
 
@@ -79,7 +76,6 @@ class Billing:Application() {
         MMKV.initialize(this)
 
         sSettings = Local.getSetting()
-        sBillingData = Local.getBillingData()
 
         val wm = this.getSystemService(WINDOW_SERVICE) as WindowManager
         val dm = DisplayMetrics()

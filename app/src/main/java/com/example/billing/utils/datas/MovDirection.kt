@@ -22,6 +22,14 @@ data class MovDirection(
         name = RememberState(name),
         type = RememberState(type)
     )
+
+    override fun toString(): String {
+        if (this == MovDirectionState.All.getData()) {
+            return "%%"
+        }else {
+            return "%${this.name}%"
+        }
+    }
 }
 
 data class MovDirectionState(
@@ -49,6 +57,14 @@ data class MovDirectionState(
         //渠道
         val ALiPay = create(3, "支付宝", false)
         val WeCharPay = create(4, "微信支付", false)
+    }
+
+    override fun toString(): String {
+        if (this == All) {
+            return "%%"
+        }else {
+            return "%${this.name.getState().value}%"
+        }
     }
 
     override fun equals(other: Any?): Boolean {

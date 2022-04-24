@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -46,6 +47,7 @@ import com.example.sport.ui.view.components.*
 import com.example.sport.ui.view.components.EditTextIconBox.Companion.Null
 import com.example.sport.ui.view.components.EditTextPromptBox.Companion.textAndText
 import com.example.sport.ui.view.components.EditTextSettingBox.Companion.NumberOption
+import com.example.sport.ui.view.components.EditTextSettingBox.Companion.TextOption
 import com.google.gson.Gson
 
 class ScreenFragmentModel : ViewModel() {
@@ -93,12 +95,17 @@ fun ScreenFragment(
     var endDay by remember {
         mutableStateOf(1)
     }
+    var message by remember {
+        mutableStateOf("")
+    }
     val screening = ScreeningPlus(
         startTime = "$startYear/$startMonth/$startDay",
         endTime = "$endYear/$endMonth/$endDay",
         minMoney = model.min.value,
         maxMoney = model.max.value,
-        channels = model.channels, directions = model.directions
+        channels = model.channels,
+        message = message,
+        directions = model.directions
     )
     val focusManager = LocalFocusManager.current
     Box(
@@ -108,7 +115,52 @@ fun ScreenFragment(
         Column(
             modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
-
+            SettingItemColum(key = "备注", value = mutableListOf(
+                {
+                    EditText(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged {
+                                model.keyboardVisible set false
+                            }
+                            .focusable(),
+                        editTextSttting = TextOption {
+                            focusManager.clearFocus()
+                        },
+                        editTextPrompt = textAndText(
+                            "备注", ""
+                        ),
+                        editTextIcon = EditTextIcon(
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_message),
+                                    contentDescription = "备注",
+                                    modifier = Modifier.size(24.dp, 24.dp)
+                                )
+                            },
+                            trailingIcon = if (message != "") {
+                                @Composable {
+                                    IconButton(onClick = {
+                                        message = ""
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Clear,
+                                            contentDescription = "删除",
+                                            modifier = Modifier.size(24.dp, 24.dp)
+                                        )
+                                    }
+                                }
+                            }else {
+                                null
+                            }
+                        ),
+                        sidevalue = message,
+                        shape = RoundedCornerShape(0)
+                    ) {
+                        message = it
+                    }
+                }
+            ))
             SettingItemColum(key = "时间", value = mutableListOf(
                 {
                     Row {
@@ -331,7 +383,7 @@ fun ScreenFragment(
                                     focusManager.clearFocus()
                                     if (!model.status.value) {
                                         model.keyboardVisible set !model.keyboardVisible.value
-                                    }else {
+                                    } else {
                                         model.status.value = false
                                         model.keyboardVisible set true
                                     }
@@ -392,7 +444,7 @@ fun ScreenFragment(
                                     focusManager.clearFocus()
                                     if (model.status.value) {
                                         model.keyboardVisible set !model.keyboardVisible.value
-                                    }else {
+                                    } else {
                                         model.status.value = true
                                         model.keyboardVisible set true
                                     }
@@ -433,12 +485,20 @@ fun ScreenFragment(
                 }
             ), value = mutableListOf(
                 {
-                    MovDirectionCheck(model.channelVisible, "渠道", model.channels, false) {
+                    MovDirectionCheck(
+                        model.channelVisible,
+                        "渠道",
+                        model.channels,
+                        false
+                    ) {
                         val bundle = Bundle()
                         bundle.putString(EXTRA_FRAGMENT, "渠道设置")
                         bundle.putBoolean(STATE_BAR, false)
                         templateActivity.startActivity(
-                            Intent(templateActivity, TemplateActivity::class.java).putExtras(
+                            Intent(
+                                templateActivity,
+                                TemplateActivity::class.java
+                            ).putExtras(
                                 bundle
                             )
                         )
@@ -456,12 +516,20 @@ fun ScreenFragment(
                 }
             ), value = mutableListOf(
                 {
-                    MovDirectionCheck(model.directionVisible, "对象", model.directions, true) {
+                    MovDirectionCheck(
+                        model.directionVisible,
+                        "对象",
+                        model.directions,
+                        true
+                    ) {
                         val bundle = Bundle()
                         bundle.putString(EXTRA_FRAGMENT, "对象设置")
                         bundle.putBoolean(STATE_BAR, false)
                         templateActivity.startActivity(
-                            Intent(templateActivity, TemplateActivity::class.java).putExtras(
+                            Intent(
+                                templateActivity,
+                                TemplateActivity::class.java
+                            ).putExtras(
                                 bundle
                             )
                         )
@@ -470,10 +538,17 @@ fun ScreenFragment(
                 }
             ))
             val list = screening.getScreened().asLiveData()
+            var height by remember {
+                mutableStateOf(50)
+            }
+            list.observe(model.templateActivity!!) {
+                if (it.size != 0) {
+                    height = 500
+                }
+            }
             val listState = list.observeAsState(arrayListOf())
             LazyColumn(
-                Modifier.height(500.dp)
-//                Modifier.weight(1f)
+                Modifier.height(height.dp)
             ) {
                 itemsIndexed(listState.value) { index, it ->
                     if (index == 0 ||
@@ -693,7 +768,8 @@ fun ScreenAnimatedEditView(model: ScreenFragmentModel = viewModel()) {
                 var integer = ""
                 var float = ""
                 if ((if (model.status.value) model.max.value else model.min.value).toString().length < 9 || pointAfter || it == ".") {
-                    (if (model.status.value) model.max.value else model.min.value).toString().split(".")
+                    (if (model.status.value) model.max.value else model.min.value).toString()
+                        .split(".")
                         .run {
                             integer = this[0]
                             float = this[1]
@@ -727,7 +803,8 @@ fun ScreenAnimatedEditView(model: ScreenFragmentModel = viewModel()) {
                         model.min.value = "$integer.${float}".toDouble()
                     }
                 } else {
-                    Toast.makeText(model.templateActivity!!, "超过最大长度", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(model.templateActivity!!, "超过最大长度", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
             Row(Modifier.fillMaxWidth()) {
@@ -754,7 +831,8 @@ fun ScreenAnimatedEditView(model: ScreenFragmentModel = viewModel()) {
                 ) {
                     var integer = 0
                     var float = 0
-                    (if (model.status.value) model.max.value else model.min.value).toString().split(".")
+                    (if (model.status.value) model.max.value else model.min.value).toString()
+                        .split(".")
                         .run {
                             integer = this[0].toInt()
                             float = this[1].toInt()

@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -295,7 +296,7 @@ fun AddDetailTopTitleView() {
                                 .padding(top = 13.dp)
                                 .size(70.dp, 5.dp)
                                 .background(
-                                    color = if (pagerState.currentPage == index)MaterialTheme.colors.secondary else Color.Unspecified,
+                                    color = if (pagerState.currentPage == index) MaterialTheme.colors.secondary else Color.Unspecified,
                                     shape = RoundedCornerShape(100)
                                 )
                         )
@@ -313,7 +314,7 @@ fun MovDirectionCheck(
     contentDescription: String,
     value: RememberState<MovDirectionState>,
     type: Boolean,
-    model: AddDetailFragmentModel = viewModel(),
+    owner: LifecycleOwner,
     create: () -> Unit
 ) {
     val list = Billing.db.getMovDirectionDao().queryWithType(type).asLiveData()
@@ -324,7 +325,8 @@ fun MovDirectionCheck(
     var height by remember {
         mutableStateOf(0)
     }
-    list.observe(model.templateActivity!!) {
+//    list.observe(model.templateActivity!!) {
+    list.observe(owner) {
         if (it.isEmpty()) {
             height = itemHeight
         } else {
@@ -545,7 +547,7 @@ fun AddDetailAnimatedEditView() {
             )
         }
     }  //时间
-    MovDirectionCheck(channelVisible, "渠道", detail.channel, false) {
+    MovDirectionCheck(channelVisible, "渠道", detail.channel, false, model.templateActivity!!) {
         val bundle = Bundle()
         bundle.putString(EXTRA_FRAGMENT, "渠道设置")
         bundle.putBoolean(STATE_BAR, false)
@@ -555,7 +557,7 @@ fun AddDetailAnimatedEditView() {
             )
         )
     }
-    MovDirectionCheck(directionVisible, "对象", detail.direction, true) {
+    MovDirectionCheck(directionVisible, "对象", detail.direction, true, model.templateActivity!!) {
         val bundle = Bundle()
         bundle.putString(EXTRA_FRAGMENT, "对象设置")
         bundle.putBoolean(STATE_BAR, false)
@@ -577,7 +579,9 @@ fun AddDetailAnimatedEditView() {
         ) {
             Column {
                 Row(
-                    Modifier.fillMaxWidth().background(MaterialTheme.colors.background),
+                    Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colors.background),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {

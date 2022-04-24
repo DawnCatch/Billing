@@ -58,16 +58,5 @@ data class Settings @OptIn(ExperimentalPagerApi::class) constructor(
     @Expose val navDefault: RememberState<Int> = RememberState(0),
     @Expose var navLastTimeSelected: RememberState<Int> = RememberState(0),
     @Expose val bottomBarStyle: RememberState<Boolean> = RememberState(true),
-    @Expose val borrowersChecked: RememberState<MovDirectionState> = RememberState(MovDirectionState.All),
-    @Expose val lendersChecked: RememberState<MovDirectionState> = RememberState(MovDirectionState.All),
     @Expose val theme: RememberState<Int> = RememberState(1)
-)
-
-data class BillingData(
-    @Expose val directions: MutableList<MovDirectionState> = mutableListOf(),
-    @Expose val channels: MutableList<MovDirectionState> = mutableListOf(
-        MovDirectionState.ALiPay,
-        MovDirectionState.WeCharPay
-    ),
-    @Expose var total: SnapshotStateList<DetailState> = mutableStateListOf(),
 )

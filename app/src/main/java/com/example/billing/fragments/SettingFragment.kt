@@ -28,9 +28,9 @@ fun SettingFragment(context: Context) {
             SettingItemColum(key = "系统", value = mutableListOf(
                 {
                     SettingItemView(
-                        title = "侧边栏初始化位置",
+                        title = "底部导航栏初始化位置",
                         selectlist = mutableListOf(
-                            "上次关闭位置", "明细", "图表", "借入", "借出"
+                            "上次关闭位置", "明细", "图表"
                         ),
                         default = Billing.sSettings.navDefault.getState().value,
                         onClickeditem = {

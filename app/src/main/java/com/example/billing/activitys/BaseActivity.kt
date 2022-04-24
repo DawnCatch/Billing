@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -47,7 +48,7 @@ abstract class BaseActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colors.surface
                 ) {
-                    Column {
+                    Column(Modifier.fillMaxSize()) {
                         if (StatusBar.getState().value) {
                             StatusBar()
                         }

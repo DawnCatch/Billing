@@ -14,13 +14,16 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.billing.R
 import com.example.billing.fragments.*
@@ -63,9 +66,9 @@ class MainActivity : BaseActivity() {
                 RememberState(Billing.sSettings.navDefault.value - 1)
         }
         val pagerState = rememberPagerState(
-            pageCount = 4,
+            pageCount = 2,
             initialPage = Billing.sSettings.navLastTimeSelected.value,
-            initialOffscreenLimit = 4
+            initialOffscreenLimit = 2
         )
         Billing.sSettings.navLastTimeSelected set pagerState.currentPage
         val title = RememberState<String>(
@@ -174,60 +177,6 @@ class MainActivity : BaseActivity() {
                         }
                         1 -> {
                             HostFragment(this@MainActivity)
-                        }
-                        2 -> {
-                            topContent set {
-                                TopBar(
-                                    title = title,
-                                    array = Billing.sBillingData.directions,
-                                    checked = Billing.sSettings.borrowersChecked
-                                )
-                            }
-                            if (Billing.sSettings.borrowersChecked.getState().value == MovDirectionState.All &&
-                                Billing.sBillingData.directions.indexOf(Billing.sSettings.borrowersChecked.getState().value) != -1
-                            ) {
-                                Column(
-                                    modifier = Modifier.fillMaxSize(),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Clear,
-                                        contentDescription = "null",
-                                        Modifier.size(50.dp, 50.dp)
-                                    )
-                                    Text(text = "暂无数据")
-                                }
-                            } else {
-                                BorrowingFragment(this@MainActivity)
-                            }
-                        }
-                        3 -> {
-                            topContent set {
-                                TopBar(
-                                    title = title,
-                                    array = Billing.sBillingData.directions,
-                                    checked = Billing.sSettings.lendersChecked
-                                )
-                            }
-                            if (Billing.sSettings.lendersChecked.getState().value == MovDirectionState.All &&
-                                Billing.sBillingData.directions.indexOf(Billing.sSettings.lendersChecked.getState().value) != -1
-                            ) {
-                                Column(
-                                    modifier = Modifier.fillMaxSize(),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Clear,
-                                        contentDescription = "null",
-                                        Modifier.size(50.dp, 50.dp)
-                                    )
-                                    Text(text = "暂无数据")
-                                }
-                            } else {
-                                LendingFragment(this@MainActivity)
-                            }
                         }
                     }
                 }
@@ -365,30 +314,14 @@ fun BottomNavigation(pagerState: PagerState) {
                 navController = pagerState
             )
         }
-        Box(Modifier.weight(1f)) {
-            ColumMenuItem(
-                text = "图表",
-                icon = R.drawable.ic_chart,
-                id = 1,
-                navController = pagerState
-            )
-        }
         if (Billing.sSettings.bottomBarStyle.getState().value) {
             Spacer(modifier = Modifier.weight(0.8f))
         }
         Box(Modifier.weight(1f)) {
             ColumMenuItem(
-                text = "借入",
-                icon = R.drawable.ic_borrowing_registration,
-                id = 2,
-                navController = pagerState
-            )
-        }
-        Box(Modifier.weight(1f)) {
-            ColumMenuItem(
-                text = "借出",
-                icon = R.drawable.ic_lending_registration,
-                id = 3,
+                text = "图表",
+                icon = R.drawable.ic_chart,
+                id = 1,
                 navController = pagerState
             )
         }

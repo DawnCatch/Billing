@@ -114,50 +114,6 @@ fun HostBaseFragment(
                     )
                 )
             }
-
-            Type.Borrowers -> {
-                leftBoxTitle = "借入"
-                screening = Screening(
-                    startTime = Time(
-                        timeBoxState.year.getState().value,
-                        timeBoxState.month.getState().value,
-                        0,
-                        0
-                    ).getState(),
-                    endTime = Time(
-                        timeBoxState.year.getState().value,
-                        timeBoxState.month.getState().value,
-                        32,
-                        0
-                    ).getState(),
-                    type = RememberState(
-                        DetailTypeState.Borrowing
-                    ),
-                    direction = Billing.sSettings.borrowersChecked,
-                )
-            }
-
-            Type.Lenders -> {
-                leftBoxTitle = "借出"
-                screening = Screening(
-                    startTime = Time(
-                        timeBoxState.year.getState().value,
-                        timeBoxState.month.getState().value,
-                        1,
-                        1
-                    ).getState(),
-                    endTime = Time(
-                        timeBoxState.year.getState().value,
-                        timeBoxState.month.getState().value,
-                        31,
-                        1
-                    ).getState(),
-                    type = RememberState(
-                        DetailTypeState.Lending
-                    ),
-                    direction = Billing.sSettings.borrowersChecked,
-                )
-            }
         }
         val list = screening.getScreened().asLiveData()
         val listState = list.observeAsState(arrayListOf())
