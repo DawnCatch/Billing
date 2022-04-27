@@ -73,7 +73,7 @@ class MainActivity : BaseActivity() {
         Billing.sSettings.navLastTimeSelected set pagerState.currentPage
         val title = RememberState<String>(
             listOf<String>(
-                "明细", "图表", "借入", "借出"
+                "明细", "未知"
             )[pagerState.currentPage]
         )
         var drawerGesturesEnabled by remember {
@@ -176,7 +176,7 @@ class MainActivity : BaseActivity() {
                             HostFragment(this@MainActivity)
                         }
                         1 -> {
-                            HostFragment(this@MainActivity)
+                            ErrorFragment()
                         }
                     }
                 }
@@ -319,8 +319,8 @@ fun BottomNavigation(pagerState: PagerState) {
         }
         Box(Modifier.weight(1f)) {
             ColumMenuItem(
-                text = "图表",
-                icon = R.drawable.ic_chart,
+                text = "未知",
+                icon = R.drawable.ic_error,
                 id = 1,
                 navController = pagerState
             )

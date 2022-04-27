@@ -113,6 +113,9 @@ class TemplateActivity : BaseActivity() {
             "对象设置" -> {
                 CreateMovDirectionFragment(templateActivity = this,true)
             }
+            else -> {
+                ErrorFragment()
+            }
         }
     }
 }
