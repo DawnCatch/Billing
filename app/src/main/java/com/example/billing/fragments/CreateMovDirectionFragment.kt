@@ -92,7 +92,7 @@ fun CreateMovDirectionFragment(
                     .fillMaxSize()
             ) {
                 items(listState.value) { it ->
-                    if (it != MovDirectionState.All.getData()) {
+                    if (it != MovDirectionState.All.getData() && it != MovDirectionState.NullT.getData() && it != MovDirectionState.NullF.getData()) {
                         MovDirectionHorizontalView(it) {
                             if (model.movDirectionFormState!!.visible.value && model.movDirectionFormState!!.movDirection.value == it.getState()) {
                                 model.movDirectionFormState!!.run {

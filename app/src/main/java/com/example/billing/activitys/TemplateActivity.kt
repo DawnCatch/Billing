@@ -88,7 +88,7 @@ class TemplateActivity : BaseActivity() {
     override fun Content() {
         when (dataType.getState().value) {
             "设置" -> {
-                SettingFragment(this)
+                SettingFragment(templateActivity = this)
             }
             "底部栏样式" -> {
                 SettingStyle()

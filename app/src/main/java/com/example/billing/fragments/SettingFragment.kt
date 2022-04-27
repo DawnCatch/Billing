@@ -2,6 +2,8 @@ package com.example.billing.fragments
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.os.Bundle
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
@@ -10,8 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.billing.R
-import com.example.billing.activitys.Billing
-import com.example.billing.activitys.BottomNavigation
+import com.example.billing.activitys.*
 import com.example.billing.ui.view.components.SettingItemView
 import com.example.sport.ui.view.SettingItemColum
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -20,15 +21,55 @@ import com.google.accompanist.pager.rememberPagerState
 @OptIn(ExperimentalPagerApi::class)
 @SuppressLint("UnusedCrossfadeTargetStateParameter")
 @Composable
-fun SettingFragment(context: Context) {
+fun SettingFragment(templateActivity: TemplateActivity) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
         item {
+            SettingItemColum(key = "添加设置", value = mutableListOf(
+                {
+                    SettingItemView(title = "类别") {
+                        val bundle = Bundle()
+                        bundle.putString(EXTRA_FRAGMENT, "类别设置")
+                        bundle.putBoolean(STATE_BAR, false)
+                        templateActivity.startActivity(
+                            Intent(templateActivity, TemplateActivity::class.java).putExtras(
+                                bundle
+                            )
+                        )
+                    }
+                },
+                {
+                    SettingItemView(title = "渠道") {
+                        val bundle = Bundle()
+                        bundle.putString(EXTRA_FRAGMENT, "渠道设置")
+                        bundle.putBoolean(STATE_BAR, false)
+                        templateActivity.startActivity(
+                            Intent(templateActivity, TemplateActivity::class.java).putExtras(
+                                bundle
+                            )
+                        )
+                    }
+                },
+                {
+                    SettingItemView(title = "对象") {
+                        val bundle = Bundle()
+                        bundle.putString(EXTRA_FRAGMENT, "对象设置")
+                        bundle.putBoolean(STATE_BAR, false)
+                        templateActivity.startActivity(
+                            Intent(templateActivity, TemplateActivity::class.java).putExtras(
+                                bundle
+                            )
+                        )
+                    }
+                }
+            ))
+        }
+        item {
             SettingItemColum(key = "系统", value = mutableListOf(
                 {
                     SettingItemView(
-                        title = "底部导航栏初始化位置",
+                        title = "底部导航栏",
                         selectlist = mutableListOf(
                             "上次关闭位置", "明细", "图表"
                         ),

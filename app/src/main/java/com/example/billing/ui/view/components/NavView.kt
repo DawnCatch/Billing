@@ -98,7 +98,6 @@ fun ColumMenuItem(
                 painter = painterResource(id = icon),
                 contentDescription = text,
                 modifier = Modifier
-//                    .padding(bottom = 5.dp)
                     .size(iconSize.getState().value),
                 tint = iconColor.getState().value
             )
