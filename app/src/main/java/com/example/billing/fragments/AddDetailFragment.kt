@@ -98,6 +98,7 @@ fun rememberDetailFormState() = remember {
     DetailFormState(visible = RememberState(false), detailType = RememberState(DetailTypeState.All))
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(
     ExperimentalPagerApi::class, ExperimentalFoundationApi::class,
     ExperimentalAnimationApi::class,
@@ -109,16 +110,20 @@ fun AddDetailFragment(
     model: AddDetailFragmentModel = viewModel()
 ) {
     val pagerState = rememberPagerState(pageCount = 2)
-    val detailFormState = rememberDetailFormState()
-    model.pagerState = pagerState
-    model.detailFormState = detailFormState
-    model.templateActivity = templateActivity
     model.detail = Gson().fromJson(
         templateActivity.intent.extras!!.getString(
             "DetailData",
             Gson().toJson(model.detail.getData())
         ), Detail::class.java
     ).getState()
+    if (!model.detail.getData().type.triad) {
+        val coroutineScope = rememberCoroutineScope()
+        coroutineScope.launch { pagerState.scrollToPage(1) }
+    }
+    val detailFormState = rememberDetailFormState()
+    model.pagerState = pagerState
+    model.detailFormState = detailFormState
+    model.templateActivity = templateActivity
     detailFormState.run {
         if (model.detail.getData().type.id != null) {
             val d =
@@ -173,78 +178,78 @@ fun AddDetailTopTitleView() {
     val pages = listOf("收入", "支出")
     val coroutineScope = rememberCoroutineScope()
 
-    if (model.erroVisible.getState().value) {
-        MDialog(
-            onDismissRequest = {
-                model.erroVisible set false
-            }
-        ) {
-            Text(text = "原来的明细格式已被删除", fontSize = 26.sp)
-            Text(text = "现将使用以下明细格式")
-            Row(
-                modifier = Modifier.width(500.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                DetailTypeVerticalView(detailType = model.detailFormState!!.detailType.getState().value.getData()) {
-                    model.erroVisible set false
-                }
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(3.dp)
-            ) {
-                Text(
-                    text = "取消",
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            model.erroVisible set false
-                        }
-                )
-                Spacer(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .height(16.dp)
-                        .background(
-                            MaterialTheme.colors.onBackground.copy(0.5f)
-                        )
-                )
-                Text(
-                    text = "确定",
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clickable {
-                            if (model.detail.money.value != 0.0) {
-                                model.detail.type set model.detailFormState!!.detailType
-                                Thread {
-                                    Billing.db
-                                        .getDetailDao()
-                                        .insert(model.detail.getData())
-                                }.start()
-                                model.templateActivity!!.finish()
-                                isRefreshing.value = true
-                                isRefreshing.value = false
-                            } else {
-                                Toast
-                                    .makeText(
-                                        templateActivity,
-                                        "金额:${model.detail.money.value}不是一个有意义的数字",
-                                        Toast.LENGTH_LONG
-                                    )
-                                    .show()
-                                model.erroVisible set false
-                            }
-                        }
-                )
-            }
-        }
-    }
+//    if (model.erroVisible.getState().value) {
+//        MDialog(
+//            onDismissRequest = {
+//                model.erroVisible set false
+//            }
+//        ) {
+//            Text(text = "原来的明细格式已被删除", fontSize = 26.sp)
+//            Text(text = "现将使用以下明细格式")
+//            Row(
+//                modifier = Modifier.width(500.dp),
+//                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.Center
+//            ) {
+//                DetailTypeVerticalView(detailType = model.detailFormState!!.detailType.getState().value.getData()) {
+//                    model.erroVisible set false
+//                }
+//            }
+//            Row(
+//                verticalAlignment = Alignment.CenterVertically,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(3.dp)
+//            ) {
+//                Text(
+//                    text = "取消",
+//                    textAlign = TextAlign.Center,
+//                    modifier = Modifier
+//                        .weight(1f)
+//                        .clickable {
+//                            model.erroVisible set false
+//                        }
+//                )
+//                Spacer(
+//                    modifier = Modifier
+//                        .width(1.dp)
+//                        .height(16.dp)
+//                        .background(
+//                            MaterialTheme.colors.onBackground.copy(0.5f)
+//                        )
+//                )
+//                Text(
+//                    text = "确定",
+//                    textAlign = TextAlign.Center,
+//                    modifier = Modifier
+//                        .weight(1f)
+//                        .fillMaxWidth()
+//                        .clickable {
+//                            if (model.detail.money.value != 0.0) {
+//                                model.detail.type set model.detailFormState!!.detailType
+//                                Thread {
+//                                    Billing.db
+//                                        .getDetailDao()
+//                                        .insert(model.detail.getData())
+//                                }.start()
+//                                model.templateActivity!!.finish()
+//                                isRefreshing.value = true
+//                                isRefreshing.value = false
+//                            } else {
+//                                Toast
+//                                    .makeText(
+//                                        templateActivity,
+//                                        "金额:${model.detail.money.value}不是一个有意义的数字",
+//                                        Toast.LENGTH_LONG
+//                                    )
+//                                    .show()
+//                                model.erroVisible set false
+//                            }
+//                        }
+//                )
+//            }
+//        }
+//    }
 
     TopAppBar(
         onLeft = {
