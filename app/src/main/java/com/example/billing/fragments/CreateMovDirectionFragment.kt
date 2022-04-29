@@ -38,6 +38,7 @@ import com.example.billing.ui.theme.itemBackgroud
 import com.example.billing.utils.RememberState
 import com.example.billing.utils.datas.MovDirection
 import com.example.billing.utils.datas.MovDirectionState
+import com.example.sport.ui.view.MDialog
 import com.example.sport.ui.view.TopAppBar
 import com.example.sport.ui.view.components.EditText
 import com.example.sport.ui.view.components.EditTextIcon
@@ -50,7 +51,6 @@ class CreateMovDirectionFragmentModel : ViewModel() {
     var templateActivity: TemplateActivity? = null
     var movDirectionFormState: MovDirectionFormState? = null
     var type: Boolean? = null
-
 }
 
 @Stable
@@ -77,6 +77,7 @@ fun CreateMovDirectionFragment(
     model.movDirectionFormState = rememberMovDirectionFormState()
     model.templateActivity = templateActivity
     model.type = type
+
     Box {
         Column {
             CreateMovDirectionTopTitleView()
@@ -174,6 +175,29 @@ fun MovDirectionHorizontalView(
     model: CreateMovDirectionFragmentModel = viewModel(),
     onclick: (() -> Unit)? = null
 ) {
+    val visible = RememberState(false)
+    if (model.type!!) {
+        MDialog(visible = visible) {
+            val list = Billing.db.getDetailDao().queryWithDirectionFlow("%${movDirection.name}%")
+                .asLiveData()
+            DetailLazyColumView(
+                modifier = Modifier.height(300.dp),
+                list = list,
+                context = model.templateActivity!!
+            )
+        }
+    }else {
+        MDialog(visible = visible) {
+            val list = Billing.db.getDetailDao().queryWithChannelFlow("%${movDirection.name}%")
+                .asLiveData()
+            DetailLazyColumView(
+                modifier = Modifier.height(300.dp),
+                list = list,
+                context = model.templateActivity!!
+            )
+        }
+    }
+
     Row(
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,
@@ -197,7 +221,23 @@ fun MovDirectionHorizontalView(
         IconButton(
             onClick = {
                 Thread {
-                    Billing.db.getMovDirectionDao().delete(movDirection)
+                    if (model.type!!) {
+                        val list =
+                            Billing.db.getDetailDao().queryWithDirection("%${movDirection.name}%")
+                        if (list.isEmpty()) {
+                            Billing.db.getMovDirectionDao().delete(movDirection)
+                        } else {
+                            visible set true
+                        }
+                    }else {
+                        val list =
+                            Billing.db.getDetailDao().queryWithChannel("%${movDirection.name}%")
+                        if (list.isEmpty()) {
+                            Billing.db.getMovDirectionDao().delete(movDirection)
+                        } else {
+                            visible set true
+                        }
+                    }
                 }.start()
             }
         ) {

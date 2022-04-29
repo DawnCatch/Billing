@@ -1,6 +1,8 @@
 package com.example.billing.fragments
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.os.Bundle
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
@@ -8,6 +10,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -22,18 +25,20 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.billing.R
-import com.example.billing.activitys.Billing
-import com.example.billing.activitys.TemplateActivity
+import com.example.billing.activitys.*
 import com.example.billing.ui.theme.itemBackgroud
 import com.example.billing.ui.theme.itemSelectedBackgroud
+import com.example.billing.utils.RememberState
 import com.example.billing.utils.datas.DetailType
 import com.example.billing.utils.datas.DetailTypeState
+import com.example.sport.ui.view.MDialog
 import com.example.sport.ui.view.TopAppBar
 import com.example.sport.ui.view.components.EditText
 import com.example.sport.ui.view.components.EditTextIcon
@@ -43,6 +48,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
 class CreateDetailTypeFragmentModel : ViewModel() {
@@ -243,7 +249,8 @@ fun CreateDetailTypeAnimatedEditView(model: CreateDetailTypeFragmentModel = view
                                     ) {
                                         detailFormState.detailType.getState().value.triad set !detailFormState.detailType.getState().value.triad.value
                                         Thread {
-                                            Billing.db.getDetailTypeDao()
+                                            Billing.db
+                                                .getDetailTypeDao()
                                                 .insert(model.detailFormState!!.detailType.getState().value.getData())
                                         }.start()
                                         focusManager.clearFocus()
@@ -312,7 +319,11 @@ fun DetailTypeHorizontalView(
     onclick: () -> Unit
 ) {
     val detailFormState = model.detailFormState!!
-
+    val visible = RememberState(false)
+    MDialog(visible = visible) {
+        val list = Billing.db.getDetailDao().queryWithDetailTypeFlow("%${detailType.name}%").asLiveData()
+        DetailLazyColumView(modifier = Modifier.height(300.dp),list = list, context = model.templateActivity!!)
+    }
     Row(
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,
@@ -353,7 +364,12 @@ fun DetailTypeHorizontalView(
             onClick = {
                 if (detailType.diy) {
                     Thread {
-                        Billing.db.getDetailTypeDao().delete(detailType)
+                        val list = Billing.db.getDetailDao().queryWithDetailType("%${detailType.name}%")
+                        if (list.isEmpty()) {
+                            Billing.db.getDetailTypeDao().delete(detailType)
+                        } else {
+                            visible set true
+                        }
                     }.start()
                 } else {
                     Toast.makeText(

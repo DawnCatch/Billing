@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -173,103 +174,7 @@ fun HostBaseFragment(
                     }
                 }
             }
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                item {
-                    if (listState.value.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .height(80.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Text(text = "暂无数据", modifier = Modifier.align(Alignment.Center))
-                        }
-                    }
-                }
-                itemsIndexed(items = listState.value) { index, it ->
-                    if (index == 0 ||
-                        (listState.value[index - 1].time.toDate() != it.time.toDate() && timeBoxState.month.getState().value != 13) ||
-                        (listState.value[index - 1].time.month != it.time.month && timeBoxState.month.getState().value == 13)
-                    ) {
-                        val headTime = listState.value[index].time
-                        var left by remember {
-                            mutableStateOf(0.0)
-                        }
-                        var right by remember {
-                            mutableStateOf(0.0)
-                        }
-                        list.observe(mainActivity) { details ->
-                            left = 0.0
-                            right = 0.0
-                            details.forEach {
-                                if (timeBoxState.month.getState().value != 13 && it.time.toDate() == headTime.toDate()) {
-                                    if (it.type.triad) {
-                                        left += it.money
-                                    } else {
-                                        right += it.money
-                                    }
-                                } else if (timeBoxState.month.getState().value == 13 && it.time.month == headTime.month) {
-                                    if (it.type.triad) {
-                                        left += it.money
-                                    } else {
-                                        right += it.money
-                                    }
-                                }
-                            }
-                        }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 5.dp, vertical = 8.dp)
-                                .clip(RoundedCornerShape(25, 25, 0, 0))
-                                .background(Color.Gray.copy(0.3f))
-                        ) {
-                            ProvideTextStyle(
-                                value = TextStyle(
-                                    color = MaterialTheme.colors.onSecondary
-                                )
-                            ) {
-                                Text(
-                                    text = if (timeBoxState.month.getState().value != 13) it.time.toDate() else "${it.time.month}月",
-                                    Modifier
-                                        .padding(start = 6.dp)
-                                        .weight(1f),
-                                )
-                                if (left != 0.0) {
-                                    Text(
-                                        text = "收入:$left",
-                                        modifier = Modifier.padding(end = 5.dp)
-                                    )
-                                }
-                                if (right != 0.0) {
-                                    Text(
-                                        text = "支出:$right",
-                                        modifier = Modifier.padding(start = 5.dp, end = 5.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    DetailItem(detail = it) {
-                        val bundle = Bundle()
-                        bundle.putString(EXTRA_FRAGMENT, "添加明细")
-                        bundle.putBoolean(STATE_BAR, false)
-                        bundle.putBoolean(RE_INIT, true)
-                        bundle.putString("DetailData", Gson().toJson(it))
-                        model.mainActivity!!.startActivity(
-                            Intent(model.mainActivity!!, TemplateActivity::class.java).putExtras(
-                                bundle
-                            )
-                        )
-                    }
-                }
-                item {
-                    Spacer(modifier = Modifier.height(60.dp))
-                }
-            }
+            DetailLazyColumView(modifier = Modifier.fillMaxSize(),list = list, context = model.mainActivity!!)
         }
     }
 }
@@ -555,5 +460,107 @@ fun ItemColum(
     ) {
         Text(text = hint, color = Color.Gray, fontSize = 15.sp)
         content()
+    }
+}
+
+@Composable
+fun DetailLazyColumView(
+    modifier: Modifier = Modifier,
+    list:LiveData<List<Detail>>,
+    context:BaseActivity
+) {
+    val listState = list.observeAsState(arrayListOf())
+    LazyColumn(
+        modifier = Modifier.then(modifier)
+            .fillMaxWidth()
+    ) {
+        item {
+            if (listState.value.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .height(80.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(text = "暂无数据", modifier = Modifier.align(Alignment.Center))
+                }
+            }
+        }
+        itemsIndexed(listState.value) { index, it ->
+            if (index == 0 ||
+                (listState.value[index - 1].time.toDate() != it.time.toDate()) ||
+                (listState.value[index - 1].time.month != it.time.month)
+            ) {
+                val headTime = listState.value[index].time
+                var left by remember {
+                    mutableStateOf(0.0)
+                }
+                var right by remember {
+                    mutableStateOf(0.0)
+                }
+                list.observe(context) { details ->
+                    left = 0.0
+                    right = 0.0
+                    details.forEach {
+                        if (it.time.toDate() == headTime.toDate()) {
+                            if (it.type.triad) {
+                                left += it.money
+                            } else {
+                                right += it.money
+                            }
+                        }
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 5.dp, vertical = 8.dp)
+                        .clip(RoundedCornerShape(25, 25, 0, 0))
+                        .background(Color.Gray.copy(0.3f))
+                ) {
+                    ProvideTextStyle(
+                        value = TextStyle(
+                            color = MaterialTheme.colors.onSecondary
+                        )
+                    ) {
+                        Text(
+                            text = it.time.toDate(),
+                            Modifier
+                                .padding(start = 6.dp)
+                                .weight(1f),
+                        )
+                        if (left != 0.0) {
+                            Text(
+                                text = "收入:$left",
+                                modifier = Modifier.padding(end = 5.dp)
+                            )
+                        }
+                        if (right != 0.0) {
+                            Text(
+                                text = "支出:$right",
+                                modifier = Modifier.padding(
+                                    start = 5.dp,
+                                    end = 5.dp
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+            DetailItem(detail = it) {
+                val bundle = Bundle()
+                bundle.putString(EXTRA_FRAGMENT, "添加明细")
+                bundle.putBoolean(STATE_BAR, false)
+                bundle.putBoolean(RE_INIT, true)
+                bundle.putString("DetailData", Gson().toJson(it))
+                context.startActivity(
+                    Intent(
+                        context,
+                        TemplateActivity::class.java
+                    ).putExtras(
+                        bundle
+                    )
+                )
+            }
+        }
     }
 }

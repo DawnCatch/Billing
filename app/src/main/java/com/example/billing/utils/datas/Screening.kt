@@ -10,34 +10,6 @@ import com.example.billing.utils.RememberState
 import com.google.gson.Gson
 import com.google.gson.annotations.Expose
 
-//data class Screening(
-//    @Expose val startTime: String = "1/1/1",
-//    @Expose val endTime: String = "5000/1/1",
-//    @Expose var minMoney: Double = 0.0,
-//    @Expose val maxMoney: Double = 9999999.0,
-//    @Expose val message: String = "",
-//    @Expose val type: DetailType = DetailTypeState.All.getData(),
-//    @Expose val direction: MovDirection = MovDirectionState.All.getData(),
-//    @Expose val channel: MovDirection = MovDirectionState.All.getData()
-//) {
-//    fun getScreened() = Billing.db.getDetailDao().queryWithAllValue(
-//        startTime = startTime,
-//        endTime = endTime,
-//        minMoney = minMoney,
-//        maxMoney = maxMoney,
-//        message = "%${message}%",
-//        type = if (type == DetailTypeState.All.getData()) {
-//            "%%"
-//        } else if (type == DetailTypeState.UpAll.getData() || type == DetailTypeState.DownAll.getData()) {
-//            "%${type.triad}%"
-//        } else {
-//            "%${type.name}%"
-//        },
-//        direction = direction.toString(),
-//        channel = channel.toString()
-//    )
-//}
-
 data class ScreeningPlus(
     @Expose val startTime: String = "1/1/1",
     @Expose val endTime: String = "5000/1/1",

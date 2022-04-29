@@ -90,10 +90,22 @@ interface DetailDao {
     fun queryAll(): Flow<List<Detail>>
 
     @Query("SELECT * FROM details WHERE type LIKE :value")
-    fun queryWithDetailType(value: String?): Flow<List<Detail>>
+    fun queryWithDetailTypeFlow(value: String?): Flow<List<Detail>>
+
+    @Query("SELECT * FROM details WHERE type LIKE :value")
+    fun queryWithDetailType(value: String?): List<Detail>
 
     @Query("SELECT * FROM details WHERE direction LIKE :value")
-    fun queryWithDirection(value: String?): Flow<List<Detail>>
+    fun queryWithDirectionFlow(value: String?): Flow<List<Detail>>
+
+    @Query("SELECT * FROM details WHERE direction LIKE :value")
+    fun queryWithDirection(value: String?): List<Detail>
+
+    @Query("SELECT * FROM details WHERE channel LIKE :value")
+    fun queryWithChannelFlow(value: String?): Flow<List<Detail>>
+
+    @Query("SELECT * FROM details WHERE channel LIKE :value")
+    fun queryWithChannel(value: String?): List<Detail>
 
     @Query("SELECT * FROM details WHERE money BETWEEN :value1 AND :value2")
     fun queryWithMoney(value1: String?, value2: String?): Flow<List<Detail>>
