@@ -73,6 +73,13 @@ fun CreateDetailTypeFragment(templateActivity: TemplateActivity) {
     val model: CreateDetailTypeFragmentModel = viewModel()
     val pagerState = rememberPagerState(pageCount = 2)
     val detailFormState = rememberDetailFormState()
+    val coroutineScope = rememberCoroutineScope()
+    coroutineScope.launch {
+        pagerState.scrollToPage(
+            if (templateActivity.intent.extras!!.getBoolean("Triad", true)) 0
+            else 1
+        )
+    }
     model.pagerState = pagerState
     model.detailFormState = detailFormState
     model.templateActivity = templateActivity
@@ -130,7 +137,8 @@ fun CreateDetailTypeTopTitleView(model: CreateDetailTypeFragmentModel = viewMode
                     val detailTypeState = DetailTypeState.SelfSubscribe()
                     Thread {
                         detailTypeState.id = Billing.db.getDetailTypeDao()
-                            .insert(model.detailFormState!!.detailType.getState().value.getData()).toInt()
+                            .insert(model.detailFormState!!.detailType.getState().value.getData())
+                            .toInt()
                     }.start()
                     model.detailFormState!!.run {
                         detailType set detailTypeState
@@ -255,8 +263,7 @@ fun CreateDetailTypeAnimatedEditView(model: CreateDetailTypeFragmentModel = view
                                         }.start()
                                         focusManager.clearFocus()
                                     }
-                                    .padding(end = 15.dp)
-                                ,
+                                    .padding(end = 15.dp),
                                 color = MaterialTheme.colors.onBackground,
                                 maxLines = 1,
                                 fontSize = 22.sp
@@ -321,8 +328,13 @@ fun DetailTypeHorizontalView(
     val detailFormState = model.detailFormState!!
     val visible = RememberState(false)
     MDialog(visible = visible) {
-        val list = Billing.db.getDetailDao().queryWithDetailTypeFlow("%${detailType.name}%").asLiveData()
-        DetailLazyColumView(modifier = Modifier.height(300.dp),list = list, context = model.templateActivity!!)
+        val list =
+            Billing.db.getDetailDao().queryWithDetailTypeFlow("%${detailType.name}%").asLiveData()
+        DetailLazyColumView(
+            modifier = Modifier.height(300.dp),
+            list = list,
+            context = model.templateActivity!!
+        )
     }
     Row(
         horizontalArrangement = Arrangement.Start,
@@ -364,7 +376,8 @@ fun DetailTypeHorizontalView(
             onClick = {
                 if (detailType.diy) {
                     Thread {
-                        val list = Billing.db.getDetailDao().queryWithDetailType("%${detailType.name}%")
+                        val list =
+                            Billing.db.getDetailDao().queryWithDetailType("%${detailType.name}%")
                         if (list.isEmpty()) {
                             Billing.db.getDetailTypeDao().delete(detailType)
                         } else {

@@ -439,6 +439,7 @@ fun DetailTypeGrid(
                     val bundle = Bundle()
                     bundle.putString(EXTRA_FRAGMENT, "类别设置")
                     bundle.putBoolean(STATE_BAR, false)
+                    bundle.putBoolean("Triad",triad)
                     templateActivity.startActivity(
                         Intent(templateActivity, TemplateActivity::class.java).putExtras(
                             bundle
