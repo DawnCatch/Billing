@@ -39,6 +39,7 @@ import com.example.billing.R
 import com.example.billing.activitys.*
 import com.example.billing.ui.theme.keyboard
 import com.example.billing.ui.theme.surfaceColor
+import com.example.billing.ui.view.components.SettingItemView
 import com.example.billing.utils.RememberState
 import com.example.billing.utils.datas.*
 import com.example.sport.ui.view.MDialog
@@ -61,6 +62,9 @@ class ScreenFragmentModel : ViewModel() {
     var status = mutableStateOf(false)
     var min = mutableStateOf(0.0)
     var max = mutableStateOf(9999999.0)
+
+    val detailTypes = mutableStateListOf<DetailType>()
+    val detailTypeVisible = RememberState(false)
 
     val channels = mutableStateListOf<MovDirection>(MovDirectionState.NullF.getData())
     val channelVisible = RememberState(false)
@@ -103,8 +107,9 @@ fun ScreenFragment(
         endTime = "$endYear/$endMonth/$endDay",
         minMoney = model.min.value,
         maxMoney = model.max.value,
-        channels = model.channels,
         message = message,
+        type = model.detailTypes,
+        channels = model.channels,
         directions = model.directions
     )
     val focusManager = LocalFocusManager.current
@@ -150,7 +155,7 @@ fun ScreenFragment(
                                         )
                                     }
                                 }
-                            }else {
+                            } else {
                                 null
                             }
                         ),
@@ -475,6 +480,14 @@ fun ScreenFragment(
                     }
                 }
             ))
+            SettingItemColum(key = "类别", value = mutableListOf(
+                {
+                    DetailTypeCheck(type = true)
+                },
+                {
+                    DetailTypeCheck(type = false)
+                }
+            ))
             SettingItemColum(key = "渠道", modifier = Modifier.height(
                 if (model.channels.size == 0) {
                     71.dp
@@ -546,7 +559,11 @@ fun ScreenFragment(
                     height = 500
                 }
             }
-            DetailLazyColumView(modifier = Modifier.height(height.dp),list = list, context = model.templateActivity!!)
+            DetailLazyColumView(
+                modifier = Modifier.height(height.dp),
+                list = list,
+                context = model.templateActivity!!
+            )
         }
         Box(
             modifier = Modifier.align(Alignment.BottomCenter),
@@ -579,6 +596,38 @@ fun MovDirectionGrid(
             }
         }
     }
+}
+
+@Composable
+fun DetailTypeCheck(
+    type: Boolean,
+    model: ScreenFragmentModel = viewModel()
+) {
+    val list = Billing.db.getDetailTypeDao().queryWithTriad(type).asLiveData()
+    val listState = list.observeAsState(arrayListOf())
+
+    val itemHeight = 40
+
+    var height by remember {
+        mutableStateOf(0)
+    }
+    list.observe(model.templateActivity!!) {
+        if (it.isEmpty()) {
+            height = itemHeight
+        } else {
+            height = (it.size + 1) * itemHeight
+        }
+    }
+
+    SettingItemView(
+        title = if (type) "收入" else "支出",
+        modifier = Modifier.height(height.dp),
+        list = listState.value,
+        listItemToString = {
+            it.name
+        },
+        checkedList = model.detailTypes
+    )
 }
 
 @Composable

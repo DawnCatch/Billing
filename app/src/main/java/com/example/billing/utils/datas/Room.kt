@@ -137,7 +137,7 @@ interface DetailDao {
                 "time BETWEEN :startTime AND :endTime " +
                 "AND money BETWEEN :minMoney AND :maxMoney " +
                 "AND message LIKE :message " +
-                "AND type LIKE :type " +
+                "AND type IN (:type) " +
                 "AND direction IN (:direction) " +
                 "AND channel IN (:channel) " +
                 "ORDER BY time DESC"
@@ -146,7 +146,7 @@ interface DetailDao {
         startTime: String, endTime: String,
         minMoney: Double, maxMoney: Double,
         message: String,
-        type: String,
+        type: List<String> = listOf(),
         direction: List<String> = listOf(),
         channel: List<String> = listOf()
     ): Flow<List<Detail>>

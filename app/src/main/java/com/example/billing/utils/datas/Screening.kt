@@ -16,7 +16,7 @@ data class ScreeningPlus(
     @Expose var minMoney: Double = 0.0,
     @Expose val maxMoney: Double = 9999999.0,
     @Expose val message: String = "",
-    @Expose val type: RememberState<DetailTypeState> = RememberState(DetailTypeState.All),
+    @Expose val type: SnapshotStateList<DetailType> = mutableStateListOf(DetailTypeState.Borrowing.getData()),
     @Expose val directions: SnapshotStateList<MovDirection> = mutableStateListOf(),
     @Expose val channels: SnapshotStateList<MovDirection> = mutableStateListOf()
 ) {
@@ -26,18 +26,12 @@ data class ScreeningPlus(
         minMoney = minMoney,
         maxMoney = maxMoney,
         message = "%${message}%",
-        type = if (type.value == DetailTypeState.All) {
-            "%%"
-        } else if (type.value == DetailTypeState.UpAll || type.value == DetailTypeState.DownAll) {
-            "%${type.value.triad.value}%"
-        } else {
-            "%${type.value.name.value}%"
-        },
+        type = sync(type),
         direction = sync(directions),
         channel = sync(channels)
     )
 
-    fun sync(value:SnapshotStateList<MovDirection>):List<String> {
+    fun sync(value:SnapshotStateList<*>):List<String> {
         val a = mutableListOf<String>()
         value.forEach {
             a.add(Gson().toJson(it))
