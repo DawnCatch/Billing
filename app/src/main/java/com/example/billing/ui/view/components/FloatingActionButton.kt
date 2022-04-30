@@ -87,7 +87,6 @@ fun MultiFloatingActionButton(
                 verticalAlignment = Alignment.Bottom,
                 modifier = Modifier
                     .padding(
-                        //从收缩列表中获取
                         bottom = shrinkListAnim[index].dp,
                         top = 5.dp,
                         end = 5.dp

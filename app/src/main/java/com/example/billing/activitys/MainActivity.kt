@@ -80,9 +80,6 @@ class MainActivity : BaseActivity() {
             mutableStateOf(false)
         }
         drawerGesturesEnabled = scaffoldState.drawerState.isOpen
-//        var screeningState by remember {
-//            mutableStateOf(false)
-//        }
         val topContent = RememberState<@Composable () -> Unit>(
             {
                 Text(
@@ -100,7 +97,6 @@ class MainActivity : BaseActivity() {
                 BottomNavigation(pagerState = pagerState)
             },
             drawerShape = RoundedCornerShape(0, 4, 4, 0),
-            //标题栏区域
             topBar = {
                 TopAppBar(
                     onLeft = {
@@ -121,8 +117,6 @@ class MainActivity : BaseActivity() {
                     onRight = {
                         IconButton(
                             onClick = {
-//                                scope.launch { scaffoldState.drawerState.open() }
-//                                screeningState = true
                                 val bundle = Bundle()
                                 bundle.putString(EXTRA_FRAGMENT, "筛选")
                                 startActivity(
@@ -167,8 +161,6 @@ class MainActivity : BaseActivity() {
             },
             isFloatingActionButtonDocked = true,
             floatingActionButtonPosition = if (Billing.sSettings.bottomBarStyle.getState().value) FabPosition.Center else FabPosition.End,
-
-            //屏幕内容区域
             content = {
                 HorizontalPager(state = pagerState) { page: Int ->
                     when (page) {

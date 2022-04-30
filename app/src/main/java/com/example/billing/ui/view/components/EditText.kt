@@ -74,7 +74,6 @@ fun EditText(
 ) {
     TextField(
         modifier = modifier,
-//            .focusable()
         value = sidevalue,
         onValueChange = {
             onValueChange(it)
@@ -116,12 +115,9 @@ fun EditTextDouble(
     onValueChange: ((String) -> Unit)? = null
 ) {
     val a = sidevalue.value
-//    OutlinedTextField
     TextField(
         modifier = Modifier
-//            .background(color = MaterialTheme.colors.background)
             .then(modifier),
-//            .focusable()
         value = sidevalue.getState().value.toString(),
         onValueChange = {
             try {
@@ -173,12 +169,9 @@ fun EditText(
     ),
     onValueChange: ((String) -> Unit)? = null
 ) {
-//    OutlinedTextField
     TextField(
         modifier = Modifier
-//            .background(color = MaterialTheme.colors.background)
             .then(modifier),
-//            .focusable()
         value = sidevalue.getState().value,
         onValueChange = {
             sidevalue set it

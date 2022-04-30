@@ -69,8 +69,6 @@ abstract class BaseActivity : ComponentActivity() {
             title = { Text(text = "hello") },
         )
     }
-
-    //    open fun hideStatusBar() = true
     var StatusBar: RememberState<Boolean> = RememberState(true)
     var reInit: RememberState<Boolean> = RememberState(false)
 

@@ -177,80 +177,6 @@ fun AddDetailTopTitleView() {
     val pagerState = model.pagerState!!
     val pages = listOf("收入", "支出")
     val coroutineScope = rememberCoroutineScope()
-
-//    if (model.erroVisible.getState().value) {
-//        MDialog(
-//            onDismissRequest = {
-//                model.erroVisible set false
-//            }
-//        ) {
-//            Text(text = "原来的明细格式已被删除", fontSize = 26.sp)
-//            Text(text = "现将使用以下明细格式")
-//            Row(
-//                modifier = Modifier.width(500.dp),
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.Center
-//            ) {
-//                DetailTypeVerticalView(detailType = model.detailFormState!!.detailType.getState().value.getData()) {
-//                    model.erroVisible set false
-//                }
-//            }
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(3.dp)
-//            ) {
-//                Text(
-//                    text = "取消",
-//                    textAlign = TextAlign.Center,
-//                    modifier = Modifier
-//                        .weight(1f)
-//                        .clickable {
-//                            model.erroVisible set false
-//                        }
-//                )
-//                Spacer(
-//                    modifier = Modifier
-//                        .width(1.dp)
-//                        .height(16.dp)
-//                        .background(
-//                            MaterialTheme.colors.onBackground.copy(0.5f)
-//                        )
-//                )
-//                Text(
-//                    text = "确定",
-//                    textAlign = TextAlign.Center,
-//                    modifier = Modifier
-//                        .weight(1f)
-//                        .fillMaxWidth()
-//                        .clickable {
-//                            if (model.detail.money.value != 0.0) {
-//                                model.detail.type set model.detailFormState!!.detailType
-//                                Thread {
-//                                    Billing.db
-//                                        .getDetailDao()
-//                                        .insert(model.detail.getData())
-//                                }.start()
-//                                model.templateActivity!!.finish()
-//                                isRefreshing.value = true
-//                                isRefreshing.value = false
-//                            } else {
-//                                Toast
-//                                    .makeText(
-//                                        templateActivity,
-//                                        "金额:${model.detail.money.value}不是一个有意义的数字",
-//                                        Toast.LENGTH_LONG
-//                                    )
-//                                    .show()
-//                                model.erroVisible set false
-//                            }
-//                        }
-//                )
-//            }
-//        }
-//    }
-
     TopAppBar(
         onLeft = {
             IconButton(onClick = {
@@ -330,7 +256,6 @@ fun MovDirectionCheck(
     var height by remember {
         mutableStateOf(0)
     }
-//    list.observe(model.templateActivity!!) {
     list.observe(owner) {
         if (it.isEmpty()) {
             height = itemHeight
@@ -445,8 +370,6 @@ fun DetailTypeGrid(
                             bundle
                         )
                     )
-//                    detailFormState.visible set false
-//                    detailFormState.detailType set DetailTypeState.All
                 }
             }
         }
@@ -552,7 +475,7 @@ fun AddDetailAnimatedEditView() {
                 }
             )
         }
-    }  //时间
+    }
     MovDirectionCheck(channelVisible, "渠道", detail.channel, false, model.templateActivity!!) {
         val bundle = Bundle()
         bundle.putString(EXTRA_FRAGMENT, "渠道设置")
