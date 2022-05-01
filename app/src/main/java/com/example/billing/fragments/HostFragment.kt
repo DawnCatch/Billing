@@ -3,11 +3,13 @@ package com.example.billing.fragments
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -174,7 +176,11 @@ fun HostBaseFragment(
                     }
                 }
             }
-            DetailLazyColumView(modifier = Modifier.fillMaxSize(),list = list, context = model.mainActivity!!)
+            DetailLazyColumView(
+                modifier = Modifier.fillMaxSize(),
+                list = list,
+                context = model.mainActivity!!
+            )
         }
     }
 }
@@ -416,7 +422,7 @@ fun TimeBox() {
                     .size(22.dp)
                     .align(Alignment.Bottom)
                     .padding(bottom = 5.dp),
-                tint = MaterialTheme.colors.onPrimary
+                tint = MaterialTheme.colors.secondary
             )
         }
     }
@@ -463,34 +469,24 @@ fun ItemColum(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DetailLazyColumView(
     modifier: Modifier = Modifier,
-    list:LiveData<List<Detail>>,
-    context:BaseActivity
+    list: LiveData<List<Detail>>,
+    context: BaseActivity
 ) {
     val listState = list.observeAsState(arrayListOf())
+    val grouped = listState.value.groupBy { it.time.toDate() }
     LazyColumn(
-        modifier = Modifier.then(modifier)
+        modifier = Modifier
+            .then(modifier)
             .fillMaxWidth()
+            .padding(horizontal = 5.dp, vertical = 8.dp)
     ) {
-        item {
-            if (listState.value.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .height(80.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text(text = "暂无数据", modifier = Modifier.align(Alignment.Center))
-                }
-            }
-        }
-        itemsIndexed(listState.value) { index, it ->
-            if (index == 0 ||
-                (listState.value[index - 1].time.toDate() != it.time.toDate()) ||
-                (listState.value[index - 1].time.month != it.time.month)
-            ) {
-                val headTime = listState.value[index].time
+        grouped.forEach { (initial, details) ->
+            stickyHeader {
+                val headTime = initial
                 var left by remember {
                     mutableStateOf(0.0)
                 }
@@ -501,7 +497,7 @@ fun DetailLazyColumView(
                     left = 0.0
                     right = 0.0
                     details.forEach {
-                        if (it.time.toDate() == headTime.toDate()) {
+                        if (it.time.toDate() == headTime) {
                             if (it.type.triad) {
                                 left += it.money
                             } else {
@@ -513,9 +509,8 @@ fun DetailLazyColumView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 5.dp, vertical = 8.dp)
                         .clip(RoundedCornerShape(25, 25, 0, 0))
-                        .background(Color.Gray.copy(0.3f))
+                        .background(Color.Gray)
                 ) {
                     ProvideTextStyle(
                         value = TextStyle(
@@ -523,7 +518,7 @@ fun DetailLazyColumView(
                         )
                     ) {
                         Text(
-                            text = it.time.toDate(),
+                            text = headTime,
                             Modifier
                                 .padding(start = 6.dp)
                                 .weight(1f),
@@ -546,20 +541,23 @@ fun DetailLazyColumView(
                     }
                 }
             }
-            DetailItem(detail = it) {
-                val bundle = Bundle()
-                bundle.putString(EXTRA_FRAGMENT, "添加明细")
-                bundle.putBoolean(STATE_BAR, false)
-                bundle.putBoolean(RE_INIT, true)
-                bundle.putString("DetailData", Gson().toJson(it))
-                context.startActivity(
-                    Intent(
-                        context,
-                        TemplateActivity::class.java
-                    ).putExtras(
-                        bundle
+
+            items(details) { it ->
+                DetailItem(detail = it) {
+                    val bundle = Bundle()
+                    bundle.putString(EXTRA_FRAGMENT, "添加明细")
+                    bundle.putBoolean(STATE_BAR, false)
+                    bundle.putBoolean(RE_INIT, true)
+                    bundle.putString("DetailData", Gson().toJson(it))
+                    context.startActivity(
+                        Intent(
+                            context,
+                            TemplateActivity::class.java
+                        ).putExtras(
+                            bundle
+                        )
                     )
-                )
+                }
             }
         }
     }
