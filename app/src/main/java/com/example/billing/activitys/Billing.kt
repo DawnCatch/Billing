@@ -19,7 +19,6 @@ import com.tencent.mmkv.MMKV
 class Billing:Application() {
     companion object {
         lateinit var sSettings: Settings
-        lateinit var sBillingDatabase: BillingDatabase
         lateinit var sGson: Gson
         lateinit var sPreferences: SharedPreferences
         lateinit var screen: Screen
