@@ -190,10 +190,10 @@ fun DetailItem(detail: Detail, onclick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
             .clickable {
                 onclick()
-            },
+            }
+            .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
