@@ -179,6 +179,13 @@ fun HostBaseFragment(
             DetailLazyColumView(
                 modifier = Modifier.fillMaxSize(),
                 list = list,
+                groupBy = {
+                          if (model.timeBoxState.month.getState().value == 13) {
+                              "${it.time.month}月"
+                          }else {
+                              it.time.toDate()
+                          }
+                },
                 context = model.mainActivity!!
             )
         }
@@ -474,10 +481,13 @@ fun ItemColum(
 fun DetailLazyColumView(
     modifier: Modifier = Modifier,
     list: LiveData<List<Detail>>,
+    groupBy:(it:Detail) -> String = {
+                                    it.time.toDate()
+    },
     context: BaseActivity
 ) {
     val listState = list.observeAsState(arrayListOf())
-    val grouped = listState.value.groupBy { it.time.toDate() }
+    val grouped = listState.value.groupBy { groupBy(it) }
     LazyColumn(
         modifier = Modifier
             .then(modifier)
@@ -559,6 +569,10 @@ fun DetailLazyColumView(
                     )
                 }
             }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(70.dp))
         }
     }
 }

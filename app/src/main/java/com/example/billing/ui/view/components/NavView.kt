@@ -154,7 +154,6 @@ fun MenuRow(
 ) {
     Surface(
         shape = RoundedCornerShape(10,10,0,0),
-//        elevation = 10.dp
     ) {
         BottomAppBar(
             cutoutShape = MaterialTheme.shapes.small.copy(
