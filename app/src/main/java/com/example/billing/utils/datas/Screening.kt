@@ -52,7 +52,7 @@ data class Screening(
 ) {
     fun getScreened() = Billing.db.getDetailDao().queryWithAllValue(
         startTime = if (startTime.month.getState().value != 13) startTime.toString() else "${startTime.year.getState().value}/1/1",
-        endTime = if (endTime.month.getState().value != 13) endTime.toString() else "${endTime.year.getState().value+1}/1/0",
+        endTime = if (endTime.month.getState().value != 13) "${endTime.year.getState().value}/${endTime.month.getState().value+1}/1" else "${endTime.year.getState().value+1}/1/0",
         minMoney = minMoney.getState().value,
         maxMoney = maxMoney.getState().value,
         message = "%${message.getState().value}%",
